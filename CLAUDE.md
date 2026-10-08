@@ -18,3 +18,12 @@ words from that topic and the topics before it.** Never use words that first app
 - Keep a set's `id` and item `id`s stable after publishing, because progress is saved by them.
 - Words: `en`, `ru`, plus `tr` (transcription) and `ex` + `exRu` (example + translation) when possible.
   Examples must follow the vocabulary rule above.
+
+## Workflow: photos from the book
+The owner just sends photos of book pages, with no instructions. For each photo:
+1. Find the page number and the topic heading. Use them to place the words in the right topic set
+   (create the next `topic-NN` set if it's a new topic, or extend the existing one if the page continues it).
+2. Decide what to add yourself: the topic's new vocabulary (words and useful phrases), not every word on the page.
+   Skip words that are already in earlier sets.
+3. Add `ru`, `tr`, and an `ex` + `exRu` example that follows the vocabulary rule.
+4. Record the page in the set's `"source"` (e.g. "Book, pp. 12–13"). Commit and push, then report what was added.
