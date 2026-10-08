@@ -54,8 +54,9 @@ h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; t
 .chip { flex: none; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 500 .85rem var(--f-body); cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 3px; gap: 3px; }
-.seg button { border: 0; background: transparent; color: var(--muted); font: 600 .82rem var(--f-body); padding: 8px 4px; border-radius: 9px; cursor: pointer; }
+.seg { display: flex; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 3px; gap: 3px; overflow-x: auto; scrollbar-width: none; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { flex: 1 0 auto; border: 0; background: transparent; color: var(--muted); font: 600 .8rem var(--f-body); padding: 8px 8px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 
 .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
@@ -101,6 +102,20 @@ body.tg .btn.main { display: none; }
 @media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
 
 /* additions for the word-set version */
+textarea#answer { width: 100%; min-height: 84px; resize: vertical; font: 500 1.05rem/1.4 var(--f-body); color: var(--ink); background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 14px; outline: none; }
+textarea#answer:focus { border-color: var(--accent); }
+.flip { display: flex; flex-direction: column; gap: 6px; border-top: 1.5px dashed var(--rule); padding-top: 12px; }
+.flip .ru { font-size: 1.15rem; font-weight: 600; overflow-wrap: anywhere; }
+.flip .ex, .fb .exru { font-size: .92rem; overflow-wrap: anywhere; }
+.flip .ex { font-style: italic; }
+.flip .exru, .fb .exru { color: var(--muted); }
+.hint { background: none; border: 1.5px dashed var(--rule); border-radius: 12px; color: var(--muted); font: 500 .9rem var(--f-body); padding: 12px; cursor: pointer; text-align: center; }
+.diff { display: flex; flex-direction: column; gap: 4px; font-size: .95rem; overflow-wrap: anywhere; }
+.diff .lbl { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.diff del { color: var(--pen); text-decoration-thickness: 2px; }
+.diff mark { background: transparent; color: var(--good); font-weight: 700; border-bottom: 2px solid var(--good); }
+.override { align-self: flex-start; }
+
 .notice { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; color: var(--muted); }
 .notice.bad { color: var(--ink); background: var(--pen-bg); border-color: transparent; }
 .notice code { background: var(--paper); padding: 1px 6px; border-radius: 6px; font-size: .9em; }
@@ -139,9 +154,11 @@ body.tg .btn.main { display: none; }
     <section>
       <p class="label">Mode</p>
       <div class="seg" id="modes" role="group" aria-label="Mode">
-        <button id="m-write" data-mode="write" aria-pressed="true">Write EN</button>
+        <button id="m-learn" data-mode="learn" aria-pressed="false">Learn</button>
+        <button id="m-write" data-mode="write" aria-pressed="true">Write</button>
         <button id="m-pick-en" data-mode="pickEn" aria-pressed="false">Pick EN</button>
         <button id="m-pick-ru" data-mode="pickRu" aria-pressed="false">Pick RU</button>
+        <button id="m-sent" data-mode="sentences" aria-pressed="false">Sentences</button>
       </div>
     </section>
 
@@ -153,6 +170,7 @@ body.tg .btn.main { display: none; }
       <div id="feedback"></div>
       <div class="row">
         <button class="btn main" id="mainBtn">Check</button>
+        <button class="btn ghost" id="altBtn" hidden>Still learning</button>
         <button class="btn ghost" id="speakBtn" title="Listen to the English">🔊 Listen</button>
       </div>
     </section>
@@ -173,7 +191,8 @@ body.tg .btn.main { display: none; }
 <!-- ================= WORDS =================
   One object in "sets" = one lesson or book page. The newest set shows first.
   Item fields: id (never change it, progress is saved by it), en, ru,
-  optional: tr (transcription), ex (example sentence), topic (key from "topics").
+  optional: tr (transcription), ex (example sentence), exRu (its Russian translation), topic (key from "topics").
+  A set may also have "sentences": [{"id": "s01", "en": "...", "ru": "..."}] for the Sentences mode.
   "a / b" in en = both answers accepted; "(to)" is optional when typing.
 -->
 <script id="words" type="application/json">
@@ -287,12 +306,20 @@ function saveProgress(setId) {
 function saveUiState() { lsSet(LS_STATE, JSON.stringify({ set: state.set, mode: state.mode })); }
 
 /* ---------- data: the WORDS block above this script ---------- */
+const wordCount = t => t.split(/\s*\/\s*/)[0].replace(/[^\p{L}\p{N}' ]/gu, " ").trim().split(/\s+/).filter(Boolean).length;
 function loadData() {
   const raw = JSON.parse(document.getElementById("words").textContent);
-  const sets = raw.sets.map(s => ({
-    id: s.id, title: s.title, added: s.added, topics: s.topics || null,
-    items: (s.items || []).map(it => ({ ...it, setId: s.id, key: s.id + "/" + it.id }))
-  }));
+  const sets = raw.sets.map(s => {
+    const items = (s.items || []).map(it => ({ ...it, setId: s.id, key: s.id + "/" + it.id }));
+    // sentence pool: the set's "sentences" + word examples that have a translation (ex + exRu)
+    // + items that already are phrases/sentences (3+ words)
+    const sentences = [
+      ...(s.sentences || []).map(x => ({ ...x, setId: s.id, key: s.id + "/" + x.id })),
+      ...items.filter(it => it.ex && it.exRu).map(it => ({ id: "ex-" + it.id, en: it.ex, ru: it.exRu, topic: it.topic, word: it.en, setId: s.id, key: s.id + "/ex-" + it.id })),
+      ...items.filter(it => wordCount(it.en) >= 3)
+    ];
+    return { id: s.id, title: s.title, added: s.added, topics: s.topics || null, items, sentences };
+  });
   return sets.sort((a, b) => (b.added || "").localeCompare(a.added || ""));   // newest first
 }
 
@@ -324,15 +351,21 @@ const today = () => Math.floor(Date.now() / 864e5);
 const rec = it => (progress[it.setId] || {})[it.id];
 const boxOf = it => (rec(it) ? rec(it)[0] : 0);
 const bucketOf = it => { const r = rec(it); return !r ? 0 : r[0] === 0 ? 1 : r[0] + 1; };
-const allItems = () => SETS.flatMap(s => s.items);
+const isSentenceMode = () => state.mode === "sentences";
+const listOf = s => (isSentenceMode() ? s.sentences : s.items);
+const allItems = () => SETS.flatMap(listOf);
 const currentSet = () => SETS.find(s => s.id === state.set);
-function setItems() { return state.set === ALL ? allItems() : (currentSet() ? currentSet().items : []); }
+function setItems() { return state.set === ALL ? allItems() : (currentSet() ? listOf(currentSet()) : []); }
 function pool() { return setItems().filter(it => state.topic === "all" || it.topic === state.topic); }
 function isNew(s) { return s.added && (Date.now() - Date.parse(s.added)) / 864e5 < NEW_DAYS; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 function pickNext() {
   const p = pool();
+  if (state.mode === "learn") {
+    const unseen = p.find(it => !rec(it));
+    if (unseen) return unseen;
+  }
   const list = p.length > 1 ? p.filter(it => it.key !== lastKey) : p;
   const weights = list.map(it => Math.pow(2, MAX_BOX - boxOf(it)) * (rec(it) ? 1 : 1.5)); // unseen words a bit more often
   let r = Math.random() * weights.reduce((a, b) => a + b, 0);
@@ -348,16 +381,55 @@ function norm(s) {
     .replace(/[.,!?…;:"«»]/g, " ")
     .replace(/\bcolor\b/g, "colour").replace(/\bfavorite\b/g, "favourite")
     .replace(/\bmom'?s\b/g, "mum's").replace(/\bmom\b/g, "mum")
-    .replace(/\bwhat's\b/g, "what is").replace(/\bwho's\b/g, "who is").replace(/\bit's\b/g, "it is")
+    .replace(/\b(what|who|it|that|there|he|she|where|how)'s\b/g, "$1 is")
+    .replace(/\bcan't\b/g, "can not").replace(/\bcannot\b/g, "can not").replace(/\bwon't\b/g, "will not")
+    .replace(/\b(\w+)n't\b/g, "$1 not")
+    .replace(/\bi'm\b/g, "i am").replace(/\b(\w+)'re\b/g, "$1 are").replace(/\b(\w+)'ve\b/g, "$1 have").replace(/\b(\w+)'ll\b/g, "$1 will")
     .replace(/^to /, "")                         // verbs: "to go" = "go"
     .replace(/\s+/g, " ").trim();
 }
 function lev(a, b) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
   for (let j = 1; j <= b.length; j++) d[0][j] = j;
-  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+  for (let i = 1; i <= a.length; i++)
+  for (let j = 1; j <= b.length; j++) {
     d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    if (i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1); // swapped letters = 1 typo
+  }
   return d[a.length][b.length];
+}
+// word-level LCS: which words of a and b line up
+function lcsAlign(a, b) {
+  const n = a.length, m = b.length, d = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    d[i][j] = a[i] === b[j] ? d[i+1][j+1] + 1 : Math.max(d[i+1][j], d[i][j+1]);
+  const inA = new Array(n).fill(false), inB = new Array(m).fill(false);
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (a[i] === b[j]) { inA[i] = inB[j] = true; i++; j++; }
+    else if (d[i+1][j] >= d[i][j+1]) i++; else j++;
+  }
+  return { len: d[0][0], inA, inB };
+}
+function gradeSentence(input, en) {
+  const a = norm(input);
+  if (!a) return "empty";
+  const targets = en.split(/\s*\/\s*/).map(norm);
+  if (targets.includes(a)) return "right";
+  // "almost" = same words, only spelling typos (each typo word ≥4 letters, 1 letter off; ≥7 letters, 2 off).
+  // A different or missing word (bus/train, has/have, a) is a real mistake → "wrong", with the word diff shown.
+  const ok = targets.some(b => {
+    const ta = a.split(" "), tb = b.split(" ");
+    if (ta.length !== tb.length) return false;
+    let typos = 0;
+    for (let i = 0; i < tb.length; i++) {
+      if (ta[i] === tb[i]) continue;
+      const d = lev(ta[i], tb[i]), w = tb[i].length;
+      if (w < 4 || d > (w >= 7 ? 2 : 1)) return false;
+      typos++;
+    }
+    return typos <= 2;
+  });
+  return ok ? "almost" : "wrong";
 }
 // en may hold alternatives: "flip-flops / slippers"
 function grade(input, en) {
@@ -372,7 +444,7 @@ function grade(input, en) {
 /* ---------- render ---------- */
 function renderSets() {
   const box = $("sets"); box.innerHTML = "";
-  const chips = [...SETS.map(s => ({ id: s.id, title: s.title, n: s.items.length, isNew: isNew(s) }))];
+  const chips = [...SETS.map(s => ({ id: s.id, title: s.title, n: listOf(s).length, isNew: isNew(s) }))];
   if (SETS.length > 1) chips.push({ id: ALL, title: "All sets", n: allItems().length });
   chips.forEach(c => {
     const b = document.createElement("button");
@@ -393,7 +465,7 @@ function renderTopics() {
   if (!topics) return;
   const box = $("topics"); box.innerHTML = "";
   Object.entries({ all: "All", ...topics }).forEach(([k, name]) => {
-    const n = k === "all" ? s.items.length : s.items.filter(it => it.topic === k).length;
+    const n = k === "all" ? listOf(s).length : listOf(s).filter(it => it.topic === k).length;
     if (!n) return;
     const b = document.createElement("button");
     b.className = "chip"; b.id = "topic-" + k;
@@ -412,13 +484,44 @@ function topicLabel(it) {
 }
 
 function renderCard() {
+  if (current) lastKey = current.key;          // never show the same card twice in a row
   current = pickNext(); answered = false;
   $("feedback").innerHTML = "";
   const area = $("answerArea"); area.innerHTML = "";
-  if (!current) { $("prompt").textContent = "No words here yet."; $("task").textContent = ""; return; }
+  if (!current) {
+    $("prompt").textContent = isSentenceMode() ? "No sentences in this set yet." : "No words here yet.";
+    $("task").textContent = isSentenceMode() ? "Sentences come from example sentences with a translation (ex + exRu) or from the set's sentence list." : "";
+    $("topicName").textContent = ""; $("boxInfo").textContent = ""; $("altBtn").hidden = true; setMainText("—");
+    return;
+  }
   const it = current, m = state.mode;
   $("topicName").textContent = topicLabel(it);
   $("boxInfo").textContent = BOX_NAMES[bucketOf(it)];
+  $("altBtn").hidden = true;
+  if (m === "learn") {
+    $("prompt").textContent = it.en + (it.tr ? "  " + it.tr : "");
+    const left = pool().filter(x => !rec(x)).length;
+    $("task").textContent = left ? `New: ${left} left · try to recall the meaning` : "Review · try to recall the meaning";
+    const hint = document.createElement("button");
+    hint.className = "hint"; hint.id = "reveal"; hint.textContent = "Tap to see the translation";
+    hint.addEventListener("click", reveal);
+    area.appendChild(hint);
+    setMainText("Show translation");
+    speak(it.en);
+    return;
+  }
+  if (m === "sentences") {
+    $("prompt").textContent = it.ru;
+    $("task").textContent = it.word ? `Translate into English · uses “${it.word}”` : "Translate into English";
+    const ta = document.createElement("textarea");
+    ta.id = "answer"; ta.setAttribute("autocapitalize", "sentences"); ta.spellcheck = false; ta.rows = 3;
+    ta.placeholder = "Type the English sentence…";
+    ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onMain(); } });
+    area.appendChild(ta);
+    setMainText("Check");
+    if (!inTelegram && window.matchMedia("(pointer: fine)").matches) setTimeout(() => ta.focus({ preventScroll: true }), 30);
+    return;
+  }
   if (m === "write") {
     $("prompt").textContent = it.ru;
     $("task").textContent = "Write it in English";
@@ -449,7 +552,7 @@ function renderCard() {
   }
 }
 
-function showFeedback(kind) {
+function showFeedback(kind, input) {
   const it = current, fb = $("feedback");
   const marks = { right: "Well done! ✓", almost: "Almost! Check the spelling", wrong: "Correct answer:" };
   const wrap = document.createElement("div");
@@ -460,13 +563,73 @@ function showFeedback(kind) {
   if (it.tr && state.mode !== "pickRu") { const t = document.createElement("span"); t.className = "tx"; t.textContent = it.tr; ans.append(t); }
   wrap.append(ans);
   const tr = document.createElement("span"); tr.className = "tr"; tr.textContent = state.mode === "pickRu" ? it.en : it.ru; wrap.append(tr);
-  if (it.ex) { const ex = document.createElement("span"); ex.className = "ex"; ex.textContent = it.ex; wrap.append(ex); }
+  if (it.ex && !isSentenceMode()) { const ex = document.createElement("span"); ex.className = "ex"; ex.textContent = it.ex; wrap.append(ex); }
+  if (it.exRu && !isSentenceMode()) { const er = document.createElement("span"); er.className = "exru"; er.textContent = it.exRu; wrap.append(er); }
+  if (input !== undefined && kind !== "right" && wordCount(it.en) >= 2) {
+    ans.remove(); wrap.insertBefore(renderDiff(input, it.en), tr);
+    if (kind === "wrong") mark.textContent = "Not quite:";
+  }
+  if (kind === "wrong" && input !== undefined) {
+    const o = document.createElement("button"); o.className = "link override"; o.id = "overrideBtn";
+    o.textContent = "My answer is also correct"; o.addEventListener("click", overrideCorrect); wrap.append(o);
+  }
   fb.innerHTML = ""; fb.append(wrap);
+}
+
+function reveal() {
+  if (answered) return;
+  answered = true; haptic("tap");
+  const it = current, area = $("answerArea"); area.innerHTML = "";
+  const f = document.createElement("div"); f.className = "flip";
+  const add = (cls, text) => { if (!text) return; const e = document.createElement("span"); e.className = cls; e.textContent = text; f.append(e); };
+  add("ru", it.ru); add("ex", it.ex); add("exru", it.exRu);
+  area.append(f);
+  setMainText("I know it ✓");
+  $("altBtn").hidden = false;
+}
+function learnAnswer(known) {
+  if (!answered) return;
+  record(known); haptic(known ? "success" : "warning");
+  renderCard();
+}
+
+// show the learner's answer with wrong words struck, and the correct sentence with missed words marked
+function renderDiff(input, en) {
+  const target = en.split(/\s*\/\s*/)[0];
+  const rawA = input.trim().split(/\s+/), rawB = target.trim().split(/\s+/);
+  const key = w => norm(w).replace(/ /g, "");
+  const { inA, inB } = lcsAlign(rawA.map(key), rawB.map(key));
+  const box = document.createElement("div"); box.className = "diff";
+  const line = (label, words, flags, tag) => {
+    const l = document.createElement("span"); l.className = "lbl"; l.textContent = label; box.append(l);
+    const row = document.createElement("span");
+    words.forEach((w, i) => {
+      const el = document.createElement(flags[i] ? "span" : tag); el.textContent = w;
+      row.append(el, document.createTextNode(" "));
+    });
+    box.append(row);
+  };
+  line("Your answer", rawA, inA, "del");
+  line("Correct", rawB, inB, "mark");
+  return box;
+}
+let undoRecord = null;
+function overrideCorrect() {
+  if (!undoRecord) return;
+  const { setId, id, prev } = undoRecord;
+  const r = prev ? prev.slice() : [0, 0, 0];
+  r[1]++; r[2] = today(); r[0] = Math.min(MAX_BOX, r[0] + 1);
+  progress[setId][id] = r; saveProgress(setId); renderProgress();
+  undoRecord = null; haptic("success");
+  const fb = $("feedback").querySelector(".fb");
+  fb.className = "fb good"; fb.querySelector(".mark").textContent = "Counted as correct ✓";
+  const b = $("overrideBtn"); if (b) b.remove();
 }
 
 function record(ok) {
   const it = current;
   const p = progress[it.setId] || (progress[it.setId] = {});
+  undoRecord = { setId: it.setId, id: it.id, prev: p[it.id] ? p[it.id].slice() : null };
   const r = p[it.id] || [0, 0, 0];
   r[1]++; r[2] = today(); r[0] = ok ? Math.min(MAX_BOX, r[0] + 1) : 0;
   p[it.id] = r;
@@ -475,11 +638,11 @@ function record(ok) {
 }
 
 function check() {
-  const inp = $("answer"); const g = grade(inp.value, current.en);
+  const inp = $("answer"); const g = (isSentenceMode() ? gradeSentence : grade)(inp.value, current.en);
   if (g === "empty") { inp.focus(); haptic("warning"); return; }
   answered = true; inp.disabled = true;
   const ok = g !== "wrong";
-  record(ok); showFeedback(g); haptic(ok ? "success" : "error");
+  record(ok); showFeedback(g, inp.value); haptic(ok ? "success" : "error");
   if (ok) speak(current.en);
   setMainText("Next →");
 }
@@ -500,8 +663,9 @@ function choose(i) {
 
 function onMain() {
   if (!current) return;
+  if (state.mode === "learn") return answered ? learnAnswer(true) : reveal();
   if (answered) return renderCard();
-  if (state.mode === "write") return check();
+  if (state.mode === "write" || state.mode === "sentences") return check();
   renderCard();
 }
 
@@ -533,15 +697,18 @@ function speak(text) {
 
 /* ---------- wiring ---------- */
 $("mainBtn").addEventListener("click", onMain);
+$("altBtn").addEventListener("click", () => learnAnswer(false));
 $("speakBtn").addEventListener("click", () => current && speak(current.en));
 document.querySelectorAll("#modes button").forEach(b => b.addEventListener("click", () => {
-  state.mode = b.dataset.mode; haptic("tap"); saveUiState();
+  state.mode = b.dataset.mode; haptic("tap"); saveUiState(); lastKey = null;
   document.querySelectorAll("#modes button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-  renderCard();
+  renderAll();
 }));
 document.addEventListener("keydown", e => {
-  if (e.target.id !== "answer" && e.key === "Enter" && answered) { e.preventDefault(); renderCard(); }
-  if (!answered && state.mode !== "write" && /^[1-4]$/.test(e.key)) choose(+e.key - 1);
+  if (e.target.id === "answer" || e.target.tagName === "BUTTON") return;
+  if (e.key === "Enter" && (answered || state.mode === "learn")) { e.preventDefault(); onMain(); }
+  if (state.mode === "learn" && answered && (e.key === "Backspace" || e.key === "2")) learnAnswer(false);
+  if (!answered && (state.mode === "pickEn" || state.mode === "pickRu") && /^[1-4]$/.test(e.key)) choose(+e.key - 1);
 });
 $("resetArea").addEventListener("click", e => {
   const id = e.target.id, area = $("resetArea");
