@@ -39,6 +39,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.45 var(--f-body); -webkit-tap-highlight-color: transparent; }
 .wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 32px; display: flex; flex-direction: column; gap: 16px; }
@@ -102,6 +103,56 @@ body.tg .btn.main { display: none; }
 @media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
 
 /* additions for the word-set version */
+.card { position: relative; transition: transform .22s ease, box-shadow .15s; }
+.card.learnmode { touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.card.dragging { transition: none; }
+.card[data-swipe="right"] { box-shadow: inset 0 0 0 2px var(--good); }
+.card[data-swipe="left"] { box-shadow: inset 0 0 0 2px var(--pen); }
+.card[data-swipe]::after { position: absolute; top: 14px; padding: 4px 10px; border-radius: 8px; font: 700 .85rem var(--f-body); letter-spacing: .04em; }
+.card[data-swipe="right"]::after { content: "I know it ✓"; right: 14px; color: var(--good); background: var(--good-bg); }
+.card[data-swipe="left"]::after { content: "↺ Repeat"; left: 14px; color: var(--pen); background: var(--pen-bg); }
+.swipehint { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+
+.screen { display: flex; flex-direction: column; gap: 18px; }
+#practice { overflow-x: hidden; overflow-x: clip; padding: 4px; margin: -4px; }
+.tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.continue { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "lbl go" "what go"; align-items: center; gap: 2px 12px; text-align: left;
+  border: 0; border-radius: 16px; padding: 14px 18px; background: var(--accent); color: var(--accent-ink); cursor: pointer; font-family: var(--f-body); }
+.continue .c-lbl { grid-area: lbl; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; opacity: .85; }
+.continue .c-what { grid-area: what; font-size: 1rem; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.continue .c-go { grid-area: go; font-size: 1.4rem; }
+.rows { display: flex; flex-direction: column; gap: 8px; }
+.setrow { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 12px; text-align: left; width: 100%;
+  background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 14px; padding: 12px 14px; color: var(--ink); font-family: var(--f-body); cursor: pointer; }
+.setrow[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.setrow .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--rule); grid-row: span 2; }
+.setrow[aria-checked="true"] .dot { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 0 4px, transparent 5px); }
+.setrow .t { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.setrow .t .new { display: inline-block; margin-left: 6px; font: 700 .62rem var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: var(--pen); }
+.setrow .num { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; grid-row: span 2; text-align: right; }
+.setrow .mini { height: 5px; border-radius: 9px; background: var(--rule); overflow: hidden; }
+.setrow .mini span { display: block; height: 100%; background: var(--good); }
+.wrap-chips { flex-wrap: wrap; overflow: visible; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.tile { display: flex; flex-direction: column; gap: 4px; text-align: left; background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 14px;
+  padding: 14px; color: var(--ink); font-family: var(--f-body); cursor: pointer; min-width: 0; }
+.tile:hover:not(:disabled) { border-color: var(--accent); }
+.tile:disabled { opacity: .45; cursor: default; }
+.tile .ic { font-size: 1.3rem; line-height: 1; }
+.tile .nm { font-weight: 700; font-size: 1rem; }
+.tile .ds { font-size: .82rem; color: var(--muted); line-height: 1.35; }
+.tile .ct { margin-top: auto; padding-top: 6px; font-size: .78rem; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile.last { border-color: var(--accent); }
+.topbar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.back { border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 10px; padding: 8px 12px; font: 600 .9rem var(--f-body); cursor: pointer; }
+.ctx { display: flex; flex-direction: column; min-width: 0; }
+.ctx-mode { font-weight: 700; font-size: 1.05rem; }
+.ctx-set { font-size: .82rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score.small { font-size: 1.4rem; }
+body.tg .back { display: none; }
+.continue:focus-visible, .setrow:focus-visible, .tile:focus-visible, .back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 textarea#answer { width: 100%; min-height: 84px; resize: vertical; font: 500 1.05rem/1.4 var(--f-body); color: var(--ink); background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 14px; outline: none; }
 textarea#answer:focus { border-color: var(--accent); }
 .flip { display: flex; flex-direction: column; gap: 6px; border-top: 1.5px dashed var(--rule); padding-top: 12px; }
@@ -119,7 +170,6 @@ textarea#answer:focus { border-color: var(--accent); }
 .notice { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; color: var(--muted); }
 .notice.bad { color: var(--ink); background: var(--pen-bg); border-color: transparent; }
 .notice code { background: var(--paper); padding: 1px 6px; border-radius: 6px; font-size: .9em; }
-#app { display: flex; flex-direction: column; gap: 16px; }
 .chip .new { display: inline-block; margin-left: 6px; font: 700 .62rem var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: var(--pen); }
 .chip[aria-pressed="true"] .new { color: inherit; opacity: .8; }
 .chip .n { opacity: .6; margin-left: 4px; font-variant-numeric: tabular-nums; }
@@ -129,38 +179,53 @@ textarea#answer:focus { border-color: var(--accent); }
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div>
-      <h1>My English words</h1>
-      <p class="hello" id="hello">From the book and lessons · RU ↔ EN</p>
-    </div>
-    <div class="score" id="score" title="Learned in this set">– / –</div>
-  </header>
-
   <div id="loading" class="notice">Loading words…</div>
   <div id="loadError" class="notice bad" hidden></div>
 
-  <div id="app" hidden>
+  <!-- ===== Screen 1: main menu ===== -->
+  <div id="menu" class="screen" hidden>
+    <header>
+      <div>
+        <h1>My English words</h1>
+        <p class="hello" id="hello">From the book and lessons · RU ↔ EN</p>
+      </div>
+      <div class="score" id="totalScore" title="Learned words, all sets">– / –</div>
+    </header>
+
+    <button class="continue" id="continueBtn" hidden>
+      <span class="c-lbl">Continue</span>
+      <span class="c-what" id="continueWhat"></span>
+      <span class="c-go" aria-hidden="true">→</span>
+    </button>
+
     <section>
-      <p class="label">Word set</p>
-      <div class="chips" id="sets" role="group" aria-label="Word set"></div>
+      <p class="label">1 · Word set</p>
+      <div class="rows" id="sets" role="radiogroup" aria-label="Word set"></div>
     </section>
 
     <section id="topicSection" hidden>
-      <p class="label">Topic</p>
-      <div class="chips" id="topics" role="group" aria-label="Topic"></div>
+      <p class="label">2 · Topic</p>
+      <div class="chips wrap-chips" id="topics" role="radiogroup" aria-label="Topic"></div>
     </section>
 
     <section>
-      <p class="label">Mode</p>
-      <div class="seg" id="modes" role="group" aria-label="Mode">
-        <button id="m-learn" data-mode="learn" aria-pressed="false">Learn</button>
-        <button id="m-write" data-mode="write" aria-pressed="true">Write</button>
-        <button id="m-pick-en" data-mode="pickEn" aria-pressed="false">Pick EN</button>
-        <button id="m-pick-ru" data-mode="pickRu" aria-pressed="false">Pick RU</button>
-        <button id="m-sent" data-mode="sentences" aria-pressed="false">Sentences</button>
-      </div>
+      <p class="label" id="modeLabel">3 · Choose how to practise</p>
+      <div class="tiles" id="modes" role="group" aria-label="Mode"></div>
     </section>
+
+    <div class="foot">
+      <span id="storeInfo">Progress is saved in this browser</span>
+      <span id="resetArea"><button class="link" id="resetBtn">Reset this set</button></span>
+    </div>
+  </div>
+
+  <!-- ===== Screen 2: practice ===== -->
+  <div id="practice" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" id="backBtn">← Menu</button>
+      <div class="ctx"><span class="ctx-mode" id="ctxMode"></span><span class="ctx-set" id="ctxSet"></span></div>
+      <div class="score small" id="score" title="Learned in this selection">– / –</div>
+    </div>
 
     <section class="card" id="card" aria-live="polite">
       <div class="meta"><span id="topicName"></span><span class="box" id="boxInfo"></span></div>
@@ -176,15 +241,10 @@ textarea#answer:focus { border-color: var(--accent); }
     </section>
 
     <section class="progress">
-      <p class="label" style="margin:0">Progress in this set</p>
+      <p class="label" style="margin:0">Progress</p>
       <div class="bar" id="bar"></div>
       <div class="legend" id="legend"></div>
     </section>
-
-    <div class="foot">
-      <span id="storeInfo">Progress is saved in this browser</span>
-      <span id="resetArea"><button class="link" id="resetBtn">Reset this set</button></span>
-    </div>
   </div>
 </div>
 
@@ -303,7 +363,10 @@ function saveProgress(setId) {
   lsSet(LS_PREFIX + setId, s);
   if (cloudOK) { try { tg.CloudStorage.setItem(LS_PREFIX + setId, s); } catch {} }
 }
-function saveUiState() { lsSet(LS_STATE, JSON.stringify({ set: state.set, mode: state.mode })); }
+function saveUiState() {
+  const old = parse(lsGet(LS_STATE)) || {};
+  lsSet(LS_STATE, JSON.stringify({ ...old, set: state.set, topic: state.topic, mode: state.mode }));
+}
 
 /* ---------- data: the WORDS block above this script ---------- */
 const wordCount = t => t.split(/\s*\/\s*/)[0].replace(/[^\p{L}\p{N}' ]/gu, " ").trim().split(/\s+/).filter(Boolean).length;
@@ -338,7 +401,7 @@ function setupTelegram() {
   const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
   if (u && u.first_name) $("hello").textContent = `Hi, ${u.first_name}! Let's practise.`;
   tg.MainButton.onClick(onMain);
-  tg.MainButton.show();
+  tg.BackButton.onClick(() => goMenu());
 }
 function haptic(kind) {
   if (!inTelegram || !tg.HapticFeedback) return;
@@ -352,11 +415,11 @@ const rec = it => (progress[it.setId] || {})[it.id];
 const boxOf = it => (rec(it) ? rec(it)[0] : 0);
 const bucketOf = it => { const r = rec(it); return !r ? 0 : r[0] === 0 ? 1 : r[0] + 1; };
 const isSentenceMode = () => state.mode === "sentences";
-const listOf = s => (isSentenceMode() ? s.sentences : s.items);
-const allItems = () => SETS.flatMap(listOf);
+const listOf = (s, mode = state.mode) => (mode === "sentences" ? s.sentences : s.items);
+const allItems = (mode = state.mode) => SETS.flatMap(s => listOf(s, mode));
 const currentSet = () => SETS.find(s => s.id === state.set);
-function setItems() { return state.set === ALL ? allItems() : (currentSet() ? listOf(currentSet()) : []); }
-function pool() { return setItems().filter(it => state.topic === "all" || it.topic === state.topic); }
+function setItems(mode = state.mode) { return state.set === ALL ? allItems(mode) : (currentSet() ? listOf(currentSet(), mode) : []); }
+function pool(mode = state.mode) { return setItems(mode).filter(it => state.topic === "all" || it.topic === state.topic); }
 function isNew(s) { return s.added && (Date.now() - Date.parse(s.added)) / 864e5 < NEW_DAYS; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
@@ -441,19 +504,34 @@ function grade(input, en) {
   return "wrong";
 }
 
-/* ---------- render ---------- */
+/* ---------- main menu ---------- */
+const MODES = [
+  { id: "learn",     icon: "🃏", name: "Learn",        desc: "Flashcards: see the word, recall it, flip" },
+  { id: "write",     icon: "✍️", name: "Write",        desc: "See Russian, type the English" },
+  { id: "pickEn",    icon: "🇬🇧", name: "Pick English", desc: "Choose the English from 4 options" },
+  { id: "pickRu",    icon: "🇷🇺", name: "Pick Russian", desc: "Choose the Russian translation" },
+  { id: "sentences", icon: "💬", name: "Sentences",    desc: "Translate whole sentences into English" }
+];
+const modeName = id => (MODES.find(m => m.id === id) || MODES[1]).name;
+let screen = "menu";
+
+function setLabel(id) { return id === ALL ? "All sets" : (SETS.find(s => s.id === id) || {}).title || ""; }
+function topicName(id) { const s = currentSet(); return id !== "all" && s && s.topics ? s.topics[id] || "" : ""; }
+function learnedIn(list) { return list.filter(it => boxOf(it) >= LEARNED_FROM).length; }
+
 function renderSets() {
   const box = $("sets"); box.innerHTML = "";
-  const chips = [...SETS.map(s => ({ id: s.id, title: s.title, n: listOf(s).length, isNew: isNew(s) }))];
-  if (SETS.length > 1) chips.push({ id: ALL, title: "All sets", n: allItems().length });
-  chips.forEach(c => {
+  const rows = SETS.map(s => ({ id: s.id, title: s.title, items: s.items, isNew: isNew(s) }));
+  if (SETS.length > 1) rows.push({ id: ALL, title: "All sets (review)", items: allItems("write") });
+  rows.forEach(r => {
     const b = document.createElement("button");
-    b.className = "chip"; b.id = "set-" + c.id;
-    b.setAttribute("aria-pressed", String(state.set === c.id));
-    b.append(c.title);
-    const n = document.createElement("span"); n.className = "n"; n.textContent = c.n; b.append(n);
-    if (c.isNew) { const t = document.createElement("span"); t.className = "new"; t.textContent = "new"; b.append(t); }
-    b.addEventListener("click", () => { state.set = c.id; state.topic = "all"; lastKey = null; haptic("tap"); saveUiState(); renderAll(); });
+    b.className = "setrow"; b.id = "set-" + r.id; b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", String(state.set === r.id));
+    const learned = learnedIn(r.items), total = r.items.length;
+    b.innerHTML = `<span class="dot"></span><span class="t"></span><span class="num">${learned}/${total}</span><span class="mini"><span style="width:${total ? learned / total * 100 : 0}%"></span></span>`;
+    b.querySelector(".t").textContent = r.title;
+    if (r.isNew) { const t = document.createElement("span"); t.className = "new"; t.textContent = "new"; b.querySelector(".t").append(t); }
+    b.addEventListener("click", () => { state.set = r.id; state.topic = "all"; lastKey = null; haptic("tap"); saveUiState(); renderMenu(); });
     box.appendChild(b);
   });
 }
@@ -462,19 +540,78 @@ function renderTopics() {
   const s = state.set === ALL ? null : currentSet();
   const topics = s && s.topics;
   $("topicSection").hidden = !topics;
+  $("modeLabel").textContent = (topics ? "3" : "2") + " · Choose how to practise";
   if (!topics) return;
   const box = $("topics"); box.innerHTML = "";
-  Object.entries({ all: "All", ...topics }).forEach(([k, name]) => {
-    const n = k === "all" ? listOf(s).length : listOf(s).filter(it => it.topic === k).length;
+  Object.entries({ all: "All topics", ...topics }).forEach(([k, name]) => {
+    const n = k === "all" ? s.items.length : s.items.filter(it => it.topic === k).length;
     if (!n) return;
     const b = document.createElement("button");
-    b.className = "chip"; b.id = "topic-" + k;
-    b.setAttribute("aria-pressed", String(state.topic === k));
+    b.className = "chip"; b.id = "topic-" + k; b.setAttribute("role", "radio");
+    b.setAttribute("aria-pressed", String(state.topic === k)); b.setAttribute("aria-checked", String(state.topic === k));
     b.append(name);
     const c = document.createElement("span"); c.className = "n"; c.textContent = n; b.append(c);
-    b.addEventListener("click", () => { state.topic = k; lastKey = null; haptic("tap"); renderTopics(); renderProgress(); renderCard(); });
+    b.addEventListener("click", () => { state.topic = k; lastKey = null; haptic("tap"); saveUiState(); renderMenu(); });
     box.appendChild(b);
   });
+}
+
+function renderModes() {
+  const box = $("modes"); box.innerHTML = "";
+  MODES.forEach(m => {
+    const list = pool(m.id);
+    const b = document.createElement("button");
+    b.className = "tile" + (m.id === state.mode ? " last" : ""); b.id = "mode-" + m.id;
+    b.disabled = !list.length;
+    const count = m.id === "learn"
+      ? (list.filter(it => !rec(it)).length ? `${list.filter(it => !rec(it)).length} new to learn` : `${list.length} to review`)
+      : m.id === "sentences" ? `${list.length} sentences` : `${learnedIn(list)}/${list.length} learned`;
+    b.innerHTML = `<span class="ic" aria-hidden="true">${m.icon}</span><span class="nm"></span><span class="ds"></span><span class="ct"></span>`;
+    b.querySelector(".nm").textContent = m.name;
+    b.querySelector(".ds").textContent = m.desc;
+    b.querySelector(".ct").textContent = list.length ? count : "Nothing here yet";
+    b.addEventListener("click", () => startPractice(m.id));
+    box.appendChild(b);
+  });
+}
+
+function renderMenu() {
+  renderSets(); renderTopics(); renderModes();
+  const words = allItems("write");
+  $("totalScore").textContent = `${learnedIn(words)} / ${words.length}`;
+  const saved = parse(lsGet(LS_STATE));
+  const cont = $("continueBtn");
+  cont.hidden = !(saved && saved.started);
+  if (!cont.hidden) $("continueWhat").textContent = [modeName(state.mode), setLabel(state.set), topicName(state.topic)].filter(Boolean).join(" · ");
+}
+
+function showScreen(name, push = true) {
+  screen = name;
+  $("menu").hidden = name !== "menu";
+  $("practice").hidden = name !== "practice";
+  if (inTelegram) {
+    if (name === "practice") { tg.BackButton.show(); tg.MainButton.show(); }
+    else { tg.BackButton.hide(); tg.MainButton.hide(); }
+  }
+  if (name === "practice" && push) { try { history.pushState({ screen: "practice" }, ""); } catch {} }
+  window.scrollTo(0, 0);
+}
+
+function startPractice(mode) {
+  state.mode = mode; lastKey = null; current = null; haptic("tap");
+  lsSet(LS_STATE, JSON.stringify({ set: state.set, topic: state.topic, mode: state.mode, started: true }));
+  $("ctxMode").textContent = modeName(mode);
+  $("ctxSet").textContent = [setLabel(state.set), topicName(state.topic)].filter(Boolean).join(" · ");
+  showScreen("practice");
+  renderProgress(); renderCard();
+}
+
+function goMenu(fromHistory = false) {
+  if (screen === "menu") return;
+  if (!fromHistory) { try { if (history.state && history.state.screen === "practice") { history.back(); return; } } catch {} }
+  try { speechSynthesis.cancel(); } catch {}
+  showScreen("menu", false);
+  renderMenu();
 }
 
 function topicLabel(it) {
@@ -498,6 +635,7 @@ function renderCard() {
   $("topicName").textContent = topicLabel(it);
   $("boxInfo").textContent = BOX_NAMES[bucketOf(it)];
   $("altBtn").hidden = true;
+  $("card").classList.toggle("learnmode", m === "learn");
   if (m === "learn") {
     $("prompt").textContent = it.en + (it.tr ? "  " + it.tr : "");
     const left = pool().filter(x => !rec(x)).length;
@@ -506,6 +644,9 @@ function renderCard() {
     hint.className = "hint"; hint.id = "reveal"; hint.textContent = "Tap to see the translation";
     hint.addEventListener("click", reveal);
     area.appendChild(hint);
+    const sh = document.createElement("div"); sh.className = "swipehint";
+    sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>";
+    area.appendChild(sh);
     setMainText("Show translation");
     speak(it.en);
     return;
@@ -584,11 +725,15 @@ function reveal() {
   const add = (cls, text) => { if (!text) return; const e = document.createElement("span"); e.className = cls; e.textContent = text; f.append(e); };
   add("ru", it.ru); add("ex", it.ex); add("exru", it.exRu);
   area.append(f);
+  const sh = document.createElement("div"); sh.className = "swipehint";
+  sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>";
+  area.append(sh);
   setMainText("I know it ✓");
   $("altBtn").hidden = false;
 }
-function learnAnswer(known) {
-  if (!answered) return;
+function learnAnswer(known, viaSwipe = false) {
+  if (!answered && !viaSwipe) return;
+  answered = true;
   record(known); haptic(known ? "success" : "warning");
   renderCard();
 }
@@ -679,7 +824,7 @@ function renderProgress() {
   $("score").textContent = `${items.filter(it => boxOf(it) >= LEARNED_FROM).length} / ${items.length}`;
 }
 
-function renderAll() { renderSets(); renderTopics(); renderProgress(); renderCard(); }
+function renderAll() { if (screen === "menu") renderMenu(); else { renderProgress(); renderCard(); } }
 
 /* ---------- speech ---------- */
 function speak(text) {
@@ -695,19 +840,65 @@ function speak(text) {
   } catch {}
 }
 
+/* ---------- swipe (Learn mode): right = I know it, left = repeat ---------- */
+(function setupSwipe() {
+  const card = $("card");
+  let sw = null, suppressClick = false;
+  const reset = () => { card.classList.remove("dragging"); card.style.transform = ""; delete card.dataset.swipe; };
+  card.addEventListener("pointerdown", e => {
+    if (screen !== "practice" || state.mode !== "learn" || !current || e.button > 0) return;
+    if (e.target.closest("#mainBtn, #altBtn, #speakBtn")) return;
+    sw = { x: e.clientX, y: e.clientY, dx: 0, active: false, id: e.pointerId };
+  });
+  card.addEventListener("pointermove", e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (!sw.active) {
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+        sw.active = true; card.classList.add("dragging");
+        try { card.setPointerCapture(sw.id); } catch {}
+      } else if (Math.abs(dy) > 14) { sw = null; return; }
+      else return;
+    }
+    sw.dx = dx;
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 30}deg)`;
+    if (dx > 50) card.dataset.swipe = "right"; else if (dx < -50) card.dataset.swipe = "left"; else delete card.dataset.swipe;
+  });
+  const end = e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const { active, dx } = sw; sw = null;
+    if (!active) return;
+    suppressClick = true; setTimeout(() => { suppressClick = false; }, 50);
+    card.classList.remove("dragging");
+    if (Math.abs(dx) < 90) { reset(); return; }
+    const known = dx > 0;
+    card.style.transform = `translateX(${known ? 120 : -120}%) rotate(${known ? 12 : -12}deg)`;
+    setTimeout(() => {
+      card.classList.add("dragging"); reset();
+      learnAnswer(known, true);
+      requestAnimationFrame(() => card.classList.remove("dragging"));
+    }, 200);
+  };
+  card.addEventListener("pointerup", end);
+  card.addEventListener("pointercancel", e => { if (sw && e.pointerId === sw.id) { sw = null; reset(); } });
+  card.addEventListener("click", e => { if (suppressClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
+
 /* ---------- wiring ---------- */
 $("mainBtn").addEventListener("click", onMain);
 $("altBtn").addEventListener("click", () => learnAnswer(false));
 $("speakBtn").addEventListener("click", () => current && speak(current.en));
-document.querySelectorAll("#modes button").forEach(b => b.addEventListener("click", () => {
-  state.mode = b.dataset.mode; haptic("tap"); saveUiState(); lastKey = null;
-  document.querySelectorAll("#modes button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-  renderAll();
-}));
+$("backBtn").addEventListener("click", () => goMenu());
+$("continueBtn").addEventListener("click", () => startPractice(state.mode));
+window.addEventListener("popstate", () => { if (screen === "practice") goMenu(true); });
 document.addEventListener("keydown", e => {
+  if (screen !== "practice") return;
+  if (e.key === "Escape") { goMenu(); return; }
   if (e.target.id === "answer" || e.target.tagName === "BUTTON") return;
   if (e.key === "Enter" && (answered || state.mode === "learn")) { e.preventDefault(); onMain(); }
   if (state.mode === "learn" && answered && (e.key === "Backspace" || e.key === "2")) learnAnswer(false);
+  if (state.mode === "learn" && e.key === "ArrowRight") learnAnswer(true, true);
+  if (state.mode === "learn" && e.key === "ArrowLeft") learnAnswer(false, true);
   if (!answered && (state.mode === "pickEn" || state.mode === "pickRu") && /^[1-4]$/.test(e.key)) choose(+e.key - 1);
 });
 $("resetArea").addEventListener("click", e => {
@@ -718,7 +909,7 @@ $("resetArea").addEventListener("click", e => {
   } else if (id === "resetYes") {
     const ids = state.set === ALL ? SETS.map(s => s.id) : [state.set];
     ids.forEach(sid => { progress[sid] = {}; saveProgress(sid); });
-    renderProgress(); renderCard(); area.innerHTML = plain;
+    renderMenu(); area.innerHTML = plain;
   } else if (id === "resetNo") area.innerHTML = plain;
 });
 
@@ -736,12 +927,12 @@ $("resetArea").addEventListener("click", e => {
   await loadProgress(SETS.map(s => s.id));
   const saved = parse(lsGet(LS_STATE)) || {};
   state.set = (saved.set && (saved.set === ALL || SETS.some(s => s.id === saved.set))) ? saved.set : (SETS[0] && SETS[0].id);
-  if (saved.mode) {
-    state.mode = saved.mode;
-    document.querySelectorAll("#modes button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.mode === state.mode)));
-  }
-  $("loading").hidden = true; $("app").hidden = false;
-  renderAll();
+  const cs = currentSet();
+  state.topic = saved.topic && cs && cs.topics && cs.topics[saved.topic] ? saved.topic : "all";
+  if (saved.mode && MODES.some(m => m.id === saved.mode)) state.mode = saved.mode;
+  $("loading").hidden = true;
+  showScreen("menu", false);
+  renderMenu();
 })();
 
 </script>

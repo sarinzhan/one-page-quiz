@@ -4,8 +4,11 @@ A one-page app for learning English words and phrases (RU ↔ EN).
 It works on GitHub Pages, as a Telegram Mini App, or by simply opening `index.html`.
 
 ## How it works
+- **Main menu:** choose the word set, then the topic (if the set has topics), then tap a mode to start.
+  **Continue** reopens your last choice. **← Menu** (or Telegram's back button, the phone's back gesture, or Esc) returns to the menu.
 - **Modes:**
   - **Learn**: flashcards for new words. You see the English (with transcription and sound), try to recall it, tap to see the Russian and the example, then choose *I know it* or *Still learning*. New words come first, in book order.
+    **Swipe right** = I know it, **swipe left** = repeat later (keyboard: → / ←).
   - **Write**: see the Russian, type the English.
   - **Pick EN / Pick RU**: choose from 4 options.
   - **Sentences**: translate whole sentences RU → EN. Wrong words are struck through and the missing or correct words are highlighted. *My answer is also correct* lets you accept a valid alternative translation.
