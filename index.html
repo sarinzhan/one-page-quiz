@@ -253,6 +253,8 @@ textarea#answer:focus { border-color: var(--accent); }
   Item fields: id (never change it, progress is saved by it), en, ru,
   optional: tr (transcription), ex (example sentence), exRu (its Russian translation), topic (key from "topics").
   A set may also have "sentences": [{"id": "s01", "en": "...", "ru": "..."}] for the Sentences mode.
+  Book topics: one set per topic with "order": 1, 2, 3… (shown in book order). Exercises for a topic
+  use only words from that topic and earlier ones (see CLAUDE.md).
   "a / b" in en = both answers accepted; "(to)" is optional when typing.
 -->
 <script id="words" type="application/json">
@@ -381,9 +383,15 @@ function loadData() {
       ...items.filter(it => it.ex && it.exRu).map(it => ({ id: "ex-" + it.id, en: it.ex, ru: it.exRu, topic: it.topic, word: it.en, setId: s.id, key: s.id + "/ex-" + it.id })),
       ...items.filter(it => wordCount(it.en) >= 3)
     ];
-    return { id: s.id, title: s.title, added: s.added, topics: s.topics || null, items, sentences };
+    return { id: s.id, title: s.title, added: s.added, order: s.order, topics: s.topics || null, items, sentences };
   });
-  return sets.sort((a, b) => (b.added || "").localeCompare(a.added || ""));   // newest first
+  // book topics ("order": 1, 2, 3…) in book order first; other sets after them, newest first
+  return sets.sort((a, b) => {
+    const ao = a.order != null, bo = b.order != null;
+    if (ao && bo) return a.order - b.order;
+    if (ao !== bo) return ao ? -1 : 1;
+    return (b.added || "").localeCompare(a.added || "");
+  });
 }
 
 /* ---------- Telegram ---------- */
