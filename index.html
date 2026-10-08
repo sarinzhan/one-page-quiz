@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<title>Teacher's Questions Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow exercise-book column — topic chips, mode switch, the question card, then progress. Red pen = teacher's corrections. */
+:root {
+  --paper: #f6f7fb;
+  --sheet: #ffffff;
+  --ink: #1d2340;
+  --muted: #6a7092;
+  --rule: #dfe3f0;
+  --accent: #2f4fd6;
+  --accent-ink: #ffffff;
+  --good: #1b8a5a;
+  --good-bg: #e6f5ee;
+  --pen: #d23b33;
+  --pen-bg: #fdecea;
+  --warn: #d9962b;
+  --f-body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12152a; --sheet: #1b1f38; --ink: #e8eaf6; --muted: #9aa0c3; --rule: #2c3254;
+    --accent: #7d93ff; --accent-ink: #0f1330; --good: #4fd19a; --good-bg: #173328; --pen: #ff7a70; --pen-bg: #3a1f22; --warn: #f0b552;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12152a; --sheet: #1b1f38; --ink: #e8eaf6; --muted: #9aa0c3; --rule: #2c3254;
+  --accent: #7d93ff; --accent-ink: #0f1330; --good: #4fd19a; --good-bg: #173328; --pen: #ff7a70; --pen-bg: #3a1f22; --warn: #f0b552;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.45 var(--f-body); -webkit-tap-highlight-color: transparent; }
+.wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.hello { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+.score { font-family: var(--f-hand); font-size: 1.7rem; color: var(--pen); line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin: 0 0 6px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 500 .85rem var(--f-body); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: transparent; color: var(--muted); font: 600 .82rem var(--f-body); padding: 8px 4px; border-radius: 9px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+.meta { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; color: var(--muted); }
+.box { font-variant-numeric: tabular-nums; }
+.prompt { font-size: 1.35rem; font-weight: 600; line-height: 1.3; margin: 0; text-wrap: balance; min-width: 0; overflow-wrap: anywhere; }
+.task { margin: -6px 0 0; color: var(--muted); font-size: .88rem; }
+
+input[type="text"] { width: 100%; font: 500 1.1rem var(--f-body); color: var(--ink); background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 14px; outline: none; }
+input[type="text"]:focus { border-color: var(--accent); }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; border: 1.5px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 12px; padding: 11px 14px; font: 500 1rem var(--f-body); cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.wrong { border-color: var(--pen); background: var(--pen-bg); text-decoration: line-through; text-decoration-color: var(--pen); }
+.opt:disabled { cursor: default; }
+
+.fb { border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+.fb.good { background: var(--good-bg); }
+.fb.bad { background: var(--pen-bg); }
+.fb .mark { font-family: var(--f-hand); font-size: 1.5rem; line-height: 1.1; }
+.fb.good .mark { color: var(--good); }
+.fb.bad .mark { color: var(--pen); }
+.fb .ans { font-weight: 600; overflow-wrap: anywhere; }
+.fb .tr { color: var(--muted); font-size: .9rem; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 0; border-radius: 12px; padding: 12px 16px; font: 600 1rem var(--f-body); cursor: pointer; }
+.btn.main { flex: 1 1 160px; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--rule); }
+.btn:focus-visible, .chip:focus-visible, .seg button:focus-visible, .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.progress { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--rule); }
+.bar span { display: block; height: 100%; transition: width .3s; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: 0; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+.link { background: none; border: 0; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; padding: 4px 0; }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.confirm .link.danger { color: var(--pen); }
+body.tg .btn.main { display: none; }
+@media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Teacher's questions</h1>
+      <p class="hello" id="hello">33 questions from the lesson · RU ↔ EN</p>
+    </div>
+    <div class="score" id="score" title="Learned questions">0 / 33</div>
+  </header>
+
+  <section>
+    <p class="label">Topic</p>
+    <div class="chips" id="topics" role="group" aria-label="Topic"></div>
+  </section>
+
+  <section>
+    <p class="label">Mode</p>
+    <div class="seg" id="modes" role="group" aria-label="Mode">
+      <button id="m-write" data-mode="write" aria-pressed="true">Write EN</button>
+      <button id="m-pick-en" data-mode="pickEn" aria-pressed="false">Pick EN</button>
+      <button id="m-pick-ru" data-mode="pickRu" aria-pressed="false">Pick RU</button>
+    </div>
+  </section>
+
+  <section class="card" id="card" aria-live="polite">
+    <div class="meta"><span id="topicName"></span><span class="box" id="boxInfo"></span></div>
+    <p class="prompt" id="prompt"></p>
+    <p class="task" id="task"></p>
+    <div id="answerArea"></div>
+    <div id="feedback"></div>
+    <div class="row">
+      <button class="btn main" id="mainBtn">Check</button>
+      <button class="btn ghost" id="speakBtn" title="Listen to the English question">🔊 Listen</button>
+    </div>
+  </section>
+
+  <section class="progress">
+    <p class="label" style="margin:0">Progress</p>
+    <div class="bar" id="bar"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <div class="foot">
+    <span id="storeInfo">Progress is saved on this device</span>
+    <span id="resetArea"><button class="link" id="resetBtn">Reset progress</button></span>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  ["clothes","What colour is it?","Какого это цвета?"],
+  ["clothes","Have you got a suitcase?","У тебя есть чемодан?"],
+  ["clothes","Have you got black flip-flops?","У тебя есть чёрные шлёпанцы?"],
+  ["clothes","What colour is your mother's coat?","Какого цвета пальто твоей мамы?"],
+  ["clothes","What colour is your mum's dressing gown?","Какого цвета мамин халат?"],
+  ["clothes","Have you got a dressing gown?","У тебя есть халат?"],
+  ["clothes","Whose shoes are these?","Чьи это туфли?"],
+  ["clothes","What colour are your mother's shoes?","Какого цвета туфли твоей мамы?"],
+  ["clothes","Have you got a red belt?","У тебя есть красный ремень?"],
+  ["clothes","Has your mother got a red coat?","У твоей мамы есть красное пальто?"],
+  ["clothes","Have you got a belt?","У тебя есть ремень?"],
+  ["clothes","Has your father got a black belt?","У твоего папы есть чёрный ремень?"],
+  ["money","How much is it?","Сколько это стоит?"],
+  ["money","How much is this?","Сколько стоит это?"],
+  ["money","How much are those?","Сколько стоят те?"],
+  ["money","How many cars has your uncle got?","Сколько машин у твоего дяди?"],
+  ["money","How many houses has your uncle got?","Сколько домов у твоего дяди?"],
+  ["time","What is the first month of the year?","Какой первый месяц года?"],
+  ["time","What is the last month of the year?","Какой последний месяц года?"],
+  ["time","What is your favourite season?","Какое твоё любимое время года?"],
+  ["time","What is your mother's favourite season?","Какое любимое время года у твоей мамы?"],
+  ["time","What day is it today?","Какой сегодня день?"],
+  ["time","What day is it tomorrow?","Какой день завтра?"],
+  ["time","What is the first day of the week?","Какой первый день недели?"],
+  ["time","What is the second day of the week?","Какой второй день недели?"],
+  ["time","What is the fifth day of the week?","Какой пятый день недели?"],
+  ["family","Have you got holidays?","У тебя есть каникулы?"],
+  ["family","When are your brother's holidays?","Когда у твоего брата каникулы?"],
+  ["family","What is your name?","Как тебя зовут?"],
+  ["family","What are your parents' names?","Как зовут твоих родителей?"],
+  ["family","What is your job?","Кем ты работаешь?"],
+  ["family","What is your father's job?","Кем работает твой папа?"],
+  ["family","What are your mother's hobbies?","Какие хобби у твоей мамы?"]
+].map(([topic, en, ru], id) => ({ id, topic, en, ru }));
+
+const TOPICS = { all: "All · Все", clothes: "Clothes & colours", money: "How much / many", time: "Days, months, seasons", family: "About you & family" };
+const MAX_BOX = 3;            // box 0 = new or wrong, 1 learning, 2 almost, 3 learned
+const LEARNED_FROM = 3;
+const BOX_COLORS = ["var(--rule)", "var(--pen)", "var(--warn)", "var(--accent)", "var(--good)"];
+const BOX_NAMES = ["New", "Wrong", "Learning", "Almost", "Learned"];
+
+const tg = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== undefined ? window.Telegram.WebApp : null;
+const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
+const $ = id => document.getElementById(id);
+
+let state = { topic: "all", mode: "write" };
+let progress = {};            // id -> { b: box, s: seen }
+let current = null, lastId = null, answered = false, choiceOptions = [];
+
+/* ---------- storage: Telegram CloudStorage → localStorage → memory ---------- */
+const KEY = "tq_progress_v1";
+const store = {
+  cloud: inTelegram && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9"),
+  load() {
+    return new Promise(res => {
+      if (this.cloud) {
+        try { tg.CloudStorage.getItem(KEY, (err, v) => { try { res(err || !v ? {} : JSON.parse(v)); } catch { res({}); } }); return; } catch {}
+      }
+      try { res(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch { res({}); }
+    });
+  },
+  save(obj) {
+    const s = JSON.stringify(obj);
+    if (this.cloud) { try { tg.CloudStorage.setItem(KEY, s); } catch {} }
+    try { localStorage.setItem(KEY, s); } catch {}
+  }
+};
+
+/* ---------- Telegram setup ---------- */
+function setupTelegram() {
+  if (!inTelegram) return;
+  document.body.classList.add("tg");
+  tg.ready(); tg.expand();
+  const p = tg.themeParams || {}, r = document.documentElement.style;
+  if (p.bg_color) r.setProperty("--paper", p.secondary_bg_color || p.bg_color);
+  if (p.bg_color) r.setProperty("--sheet", p.bg_color);
+  if (p.text_color) r.setProperty("--ink", p.text_color);
+  if (p.hint_color) r.setProperty("--muted", p.hint_color);
+  if (p.button_color) r.setProperty("--accent", p.button_color);
+  if (p.button_text_color) r.setProperty("--accent-ink", p.button_text_color);
+  if (tg.colorScheme === "dark") document.documentElement.style.colorScheme = "dark";
+  const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if (u && u.first_name) $("hello").textContent = `Hi, ${u.first_name}! Let's practise.`;
+  tg.MainButton.onClick(onMain);
+  tg.MainButton.show();
+}
+function haptic(kind) {
+  if (!inTelegram || !tg.HapticFeedback) return;
+  try { kind === "tap" ? tg.HapticFeedback.impactOccurred("light") : tg.HapticFeedback.notificationOccurred(kind); } catch {}
+}
+function setMainText(t) {
+  $("mainBtn").textContent = t;
+  if (inTelegram) tg.MainButton.setText(t);
+}
+
+/* ---------- picking the next card (simple Leitner) ---------- */
+const boxOf = q => (progress[q.id] ? progress[q.id].b : 0);
+const bucketOf = q => { const p = progress[q.id]; return !p ? 0 : p.b === 0 ? 1 : p.b + 1; };
+function pool() { return QUESTIONS.filter(q => state.topic === "all" || q.topic === state.topic); }
+function pickNext() {
+  const list = pool().filter(q => q.id !== lastId || pool().length === 1);
+  const weights = list.map(q => Math.pow(2, MAX_BOX - boxOf(q)));   // low box → much more often
+  let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < list.length; i++) { r -= weights[i]; if (r <= 0) return list[i]; }
+  return list[list.length - 1];
+}
+
+/* ---------- answer checking ---------- */
+function norm(s) {
+  return s.toLowerCase()
+    .replace(/[’‘`´]/g, "'")
+    .replace(/[.,!?…;:"«»]/g, " ")
+    .replace(/\bcolor\b/g, "colour").replace(/\bfavorite\b/g, "favourite")
+    .replace(/\bmom'?s\b/g, "mum's").replace(/\bmom\b/g, "mum")
+    .replace(/\bwhat's\b/g, "what is").replace(/\bwho's\b/g, "who is")
+    .replace(/\s+/g, " ").trim();
+}
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function grade(input, target) {
+  const a = norm(input), b = norm(target);
+  if (!a) return "empty";
+  if (a === b) return "right";
+  if (b.length > 12 && lev(a, b) <= 2) return "almost";
+  return "wrong";
+}
+
+/* ---------- render ---------- */
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function renderCard() {
+  current = pickNext(); answered = false;
+  const q = current, m = state.mode;
+  $("topicName").textContent = TOPICS[q.topic];
+  $("boxInfo").textContent = BOX_NAMES[bucketOf(q)];
+  $("feedback").innerHTML = "";
+  const area = $("answerArea"); area.innerHTML = "";
+  if (m === "write") {
+    $("prompt").textContent = q.ru;
+    $("task").textContent = "Write this question in English";
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.id = "answer"; inp.autocomplete = "off"; inp.autocapitalize = "sentences"; inp.spellcheck = false;
+    inp.placeholder = "Type in English…";
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); onMain(); } });
+    area.appendChild(inp);
+    setMainText("Check");
+    if (!inTelegram || window.innerWidth > 700) setTimeout(() => inp.focus({ preventScroll: true }), 30);
+  } else {
+    const isEn = m === "pickEn";
+    $("prompt").textContent = isEn ? q.ru : q.en;
+    $("task").textContent = isEn ? "Choose the English question" : "Выбери перевод на русский";
+    const others = shuffle(QUESTIONS.filter(x => x.id !== q.id));
+    // prefer distractors from the same topic so the choice is not too easy
+    const same = others.filter(x => x.topic === q.topic), rest = others.filter(x => x.topic !== q.topic);
+    choiceOptions = shuffle([q, ...same.concat(rest).slice(0, 3)]);
+    const box = document.createElement("div"); box.className = "opts";
+    choiceOptions.forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.id = "opt" + i; b.textContent = isEn ? o.en : o.ru;
+      b.addEventListener("click", () => choose(i));
+      box.appendChild(b);
+    });
+    area.appendChild(box);
+    setMainText("Skip");
+  }
+}
+
+function showFeedback(kind, extra) {
+  const q = current, fb = $("feedback");
+  const marks = { right: "Well done! ✓", almost: "Almost! Check the spelling", wrong: "Correct answer:" };
+  fb.innerHTML = `<div class="fb ${kind === "wrong" ? "bad" : "good"}">
+    <span class="mark">${marks[kind]}</span>
+    ${kind !== "right" || extra ? `<span class="ans"></span>` : ""}
+    <span class="tr"></span></div>`;
+  const ans = fb.querySelector(".ans");
+  if (ans) ans.textContent = state.mode === "pickRu" ? q.ru : q.en;
+  fb.querySelector(".tr").textContent = state.mode === "pickRu" ? q.en : q.ru;
+}
+
+function record(ok) {
+  const p = progress[current.id] || { b: 0, s: 0 };
+  p.s++; p.b = ok ? Math.min(MAX_BOX, p.b + 1) : 0;
+  progress[current.id] = p;
+  store.save(progress);
+  renderProgress();
+}
+
+function check() {
+  const inp = $("answer"); const g = grade(inp.value, current.en);
+  if (g === "empty") { inp.focus(); haptic("warning"); return; }
+  answered = true; inp.disabled = true;
+  const ok = g !== "wrong";
+  record(ok); showFeedback(g, true); haptic(ok ? "success" : "error");
+  if (ok) speak(current.en);
+  setMainText("Next →");
+}
+
+function choose(i) {
+  if (answered) return;
+  answered = true; haptic("tap");
+  const ok = choiceOptions[i].id === current.id;
+  document.querySelectorAll(".opt").forEach((b, j) => {
+    b.disabled = true;
+    if (choiceOptions[j].id === current.id) b.classList.add("right");
+    else if (j === i) b.classList.add("wrong");
+  });
+  record(ok); showFeedback(ok ? "right" : "wrong", false); haptic(ok ? "success" : "error");
+  if (ok) speak(current.en);
+  setMainText("Next →");
+}
+
+function onMain() {
+  if (answered) return renderCard();
+  if (state.mode === "write") return check();
+  renderCard();   // skip
+}
+
+function renderProgress() {
+  const list = pool();
+  const buckets = [0, 0, 0, 0, 0];
+  list.forEach(q => { buckets[bucketOf(q)] += 1; });
+  $("bar").innerHTML = buckets.map((n, i) => n ? `<span style="width:${n / list.length * 100}%;background:${BOX_COLORS[i]}" title="${BOX_NAMES[i]}: ${n}"></span>` : "").join("");
+  $("legend").innerHTML = buckets.map((n, i) => `<span><i style="background:${BOX_COLORS[i]}"></i>${BOX_NAMES[i]} ${n}</span>`).join("");
+  const learned = QUESTIONS.filter(q => boxOf(q) >= LEARNED_FROM).length;
+  $("score").textContent = `${learned} / ${QUESTIONS.length}`;
+}
+
+function renderTopics() {
+  $("topics").innerHTML = "";
+  Object.entries(TOPICS).forEach(([k, name]) => {
+    const n = k === "all" ? QUESTIONS.length : QUESTIONS.filter(q => q.topic === k).length;
+    const b = document.createElement("button");
+    b.className = "chip"; b.id = "topic-" + k; b.textContent = `${name} ${n}`;
+    b.setAttribute("aria-pressed", String(state.topic === k));
+    b.addEventListener("click", () => { state.topic = k; lastId = null; haptic("tap"); renderTopics(); renderProgress(); renderCard(); });
+    $("topics").appendChild(b);
+  });
+}
+
+/* ---------- speech ---------- */
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/…/g, ""));
+    u.lang = "en-GB"; u.rate = 0.9;
+    const v = speechSynthesis.getVoices().find(v => /en-GB/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^en/i.test(v.lang));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+
+/* ---------- wiring ---------- */
+$("mainBtn").addEventListener("click", onMain);
+$("speakBtn").addEventListener("click", () => current && speak(current.en));
+document.querySelectorAll("#modes button").forEach(b => b.addEventListener("click", () => {
+  state.mode = b.dataset.mode; haptic("tap");
+  document.querySelectorAll("#modes button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  renderCard();
+}));
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && answered) { e.preventDefault(); renderCard(); }
+  if (!answered && state.mode !== "write" && /^[1-4]$/.test(e.key)) choose(+e.key - 1);
+});
+$("resetArea").addEventListener("click", e => {
+  const id = e.target.id;
+  if (id === "resetBtn") {
+    $("resetArea").innerHTML = `<span class="confirm">Delete all progress? <button class="link danger" id="resetYes">Yes, reset</button><button class="link" id="resetNo">Cancel</button></span>`;
+  } else if (id === "resetYes") {
+    progress = {}; store.save(progress); renderProgress(); renderCard();
+    $("resetArea").innerHTML = `<button class="link" id="resetBtn">Reset progress</button>`;
+  } else if (id === "resetNo") {
+    $("resetArea").innerHTML = `<button class="link" id="resetBtn">Reset progress</button>`;
+  }
+});
+
+(async function start() {
+  setupTelegram();
+  if (store.cloud) $("storeInfo").textContent = "Progress syncs with your Telegram account";
+  progress = await store.load();
+  renderTopics(); renderProgress(); renderCard();
+})();
+</script>
+
+</body>
+</html>
