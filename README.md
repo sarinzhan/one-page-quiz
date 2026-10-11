@@ -1,42 +1,46 @@
 # One Page Quiz
 
-A one-page app for learning English words and phrases (RU ↔ EN).
+A one-page English course built from the owner's book, topic by topic.
 It works on GitHub Pages, as a Telegram Mini App, or by simply opening `index.html`.
 
 ## How it works
-- **Main menu:** choose the word set, then the topic (if the set has topics), then tap a mode to start.
-  **Continue** reopens your last choice. **← Menu** (or Telegram's back button, the phone's back gesture, or Esc) returns to the menu.
-- **Modes:**
-  - **Learn**: flashcards for new words. You see the English (with transcription and sound), try to recall it, tap to see the Russian and the example, then choose *I know it* or *Still learning*. New words come first, in book order.
-    **Swipe right** = I know it, **swipe left** = repeat later (keyboard: → / ←).
-  - **Write**: see the Russian, type the English.
-  - **Pick EN / Pick RU**: choose from 4 options.
-  - **Sentences**: translate whole sentences RU → EN. Wrong words are struck through and the missing or correct words are highlighted. *My answer is also correct* lets you accept a valid alternative translation.
-- **Word sets:** one set per lesson or book page, newest first, with a NEW badge for 7 days. *All sets* mixes them for review.
-- **Spaced repetition:** a right answer moves a word up (Learning → Almost → Learned), and a wrong one resets it.
-- **Progress** is saved in the browser's localStorage, one key per set (`ew_p_<setId>`). In Telegram it also syncs via CloudStorage.
+- **Main menu:** the list of book topics, in book order. **Continue** reopens your last practice.
+- **A topic** has three tabs:
+  - **Grammar**: explanations only (rules, tables, examples). Each section has a *Practise* button that opens its sentences.
+  - **Vocabulary**: the topic's words grouped by theme. Tap a theme to see its words (tap a word to hear it).
+    **Learn** opens flashcards for one theme, or **Learn all words** for the whole topic.
+    Flashcards: see the English, recall it, flip; **swipe right** = I know it, **swipe left** = repeat (keyboard: → / ←).
+  - **Tasks**: translate sentences from Russian into English, all of them or one grammar section.
+    Wrong words are struck through and missing words are highlighted. *My answer is also correct* accepts a valid alternative.
+    *See the rule* jumps to the grammar section the sentence practises.
+- **Back:** the ← button, Telegram's back button, the phone's back gesture or Esc goes one level up (practice → topic → menu).
+- **Spaced repetition:** a right answer moves an item up (Learning → Almost → Learned), a wrong one resets it.
+- **Progress** is saved in localStorage: `ew_p_<topicId>` for words, `ew_t_<topicId>` for tasks.
+  In Telegram it also syncs via CloudStorage (long values are split into parts automatically).
 
-## Adding words
-All words are in the `WORDS` block inside `index.html` (`<script id="words" type="application/json">`).
-Add a new object to `"sets"`:
+## Data
+Everything is in the JSON block `<script id="words" type="application/json">` inside `index.html`:
 ```json
-{
-  "id": "book-p12",
-  "title": "Book p. 12",
-  "source": "Photo of the book, page 12",
-  "added": "2026-10-09",
-  "items": [
-    {"id": "w001", "en": "suitcase", "ru": "чемодан", "tr": "/ˈsuːtkeɪs/", "ex": "Have you got a suitcase?", "exRu": "У тебя есть чемодан?"},
-    {"id": "w002", "en": "flip-flops / slippers", "ru": "шлёпанцы"},
-    {"id": "w003", "en": "(to) travel", "ru": "путешествовать"}
-  ]
-}
+{"topics": [{
+  "id": "topic-02", "order": 2, "title": "Topic 2 · Colours, animals & to be", "pages": "24–28", "added": "2026-10-11",
+  "themes":  {"colours": "Colours", "young": "Animals & their young"},
+  "grammar": [{"id": "g-tobe", "title": "Глагол to be: am / is / are", "body": "…markup…"}],
+  "words":   [{"id": "w051", "en": "black", "ru": "чёрный", "tr": "/blæk/", "topic": "colours", "ex": "My cat is black.", "exRu": "Моя кошка чёрная."}],
+  "tasks":   [{"id": "t01", "ru": "Я дома.", "en": ["I am at home.", "I'm at home."], "grammar": "g-tobe"}]
+}]}
 ```
-Sentences for the **Sentences** mode come from:
-- `ex` + `exRu` on a word (the example and its translation),
-- a set-level `"sentences": [{"id": "s01", "en": "...", "ru": "..."}]` list,
-- any item that is already a phrase of 3+ words (like the teacher's questions).
+- **words:** `en`, `ru`, optional `tr` (transcription), `topic` (a theme key), `ex` + `exRu` (example shown on the flashcard).
+  In `en`, text in `(…)` is optional and `a / b` lists alternatives.
+- **tasks:** `ru` is the prompt; `en` is a list: the first item is the main answer, the rest are other accepted answers;
+  `grammar` is the id of the grammar section it practises.
+- **grammar body markup:** `### subheading`, `| table | rows |` (first row = header), `> example — перевод`,
+  `- list item`, `! tip`, `**bold**`, `*italic*`, `~~wrong form~~`. Blank line = new paragraph.
+- **IDs never change** after publishing, because progress is saved by them.
 
-- `id`: never change it after publishing, because progress is saved by it.
-- `en`: `a / b` means both answers are accepted. `(to)` is optional when typing.
-- Optional: `tr` (transcription), `ex` (example sentence), `exRu` (its translation), `topic` (a key from the set's `"topics"`).
+## Checking the data
+```
+python3 tools/check.py
+```
+It checks IDs, themes and grammar links, and the **vocabulary rule**: tasks and examples in a topic may use only
+words from that topic and earlier ones (plus basic grammar words). A word from a later topic is an error;
+a word that is in no topic is a warning.

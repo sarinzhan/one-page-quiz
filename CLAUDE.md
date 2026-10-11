@@ -1,29 +1,36 @@
-# One Page Quiz: rules for adding words and exercises
+# One Page Quiz: rules for adding topics, words, grammar and tasks
 
-The whole app is `index.html`. All words live in the JSON block `<script id="words" type="application/json">`.
-Format: see README.md ("Adding words").
+The whole app is `index.html`. All content lives in the JSON block `<script id="words" type="application/json">`.
+Format: README.md ("Data"). After every change run `python3 tools/check.py`: it must show 0 errors.
 
-## Book topics: the vocabulary rule
-The words come from the owner's English book, which is split into **topics in a fixed order**
-(Topic 1, Topic 2, …). Each topic introduces its own new words.
+## Structure
+The course follows the owner's English book, split into **topics in a fixed order** (Topic 1, Topic 2, …).
+A book topic = vocabulary pages → a GRAMMAR page → exercises. In the app each topic has:
+- **grammar**: explanations only (in Russian, examples in English). No exercises here.
+- **themes + words**: the topic's vocabulary grouped by theme. Words that appear on the grammar pages
+  (men/women, me/him, late/tired, what/why…) also go into vocabulary, as their own themes.
+- **tasks**: the only task type is **translation from Russian into English**. Each task practises one grammar section.
 
-**When writing exercises (sentences, examples, `ex`/`exRu`, `sentences` lists) for a topic, use only
-words from that topic and the topics before it.** Never use words that first appear in a later topic.
-- Exercises for Topic 1 use only Topic 1 words, plus basic grammar words (I, you, is, are, a, the, have got, my…).
-- Exercises for Topic 3 may use Topic 1, 2 and 3 words.
-- If a natural sentence needs a word from a later topic, rewrite the sentence instead.
+## The vocabulary rule
+**Tasks and example sentences (`ex`) in a topic use only words from that topic and the topics before it**,
+plus basic grammar words (I, you, is, are, a, the, have got, my, in, on…; the list is `BASIC` in tools/check.py).
+Never use a word that first appears in a later topic. If a natural sentence needs one, rewrite the sentence.
+`tools/check.py` enforces this.
 
-## How to store book topics
-- One set per book topic, in book order: `"id": "topic-01"`, `"title": "Topic 1 · <name from the book>"`, `"order": 1`.
-- Keep a set's `id` and item `id`s stable after publishing, because progress is saved by them.
-- Words: `en`, `ru`, plus `tr` (transcription) and `ex` + `exRu` (example + translation) when possible.
-  Examples must follow the vocabulary rule above.
+## Storing topics
+- One object per book topic: `"id": "topic-NN"`, `"order": N`, `"title": "Topic N · <name>"`, `"pages": "24–28"`.
+- Keep topic ids, word ids (`w001`…), task ids (`t01`…) and grammar ids stable: progress is saved by them.
+  New words get the next free id in that topic.
+- Words: `en`, `ru`, `tr`, `topic` (theme key), and `ex` + `exRu` when possible.
+- Tasks: `ru`, `en` (list: main answer first, then other correct variants such as short forms), `grammar`.
+  Add a hint in brackets to `ru` when English needs something Russian doesn't show, e.g. "Это груши. (рядом)".
 
 ## Workflow: photos from the book
 The owner just sends photos of book pages, with no instructions. For each photo:
-1. Find the page number and the topic heading. Use them to place the words in the right topic set
-   (create the next `topic-NN` set if it's a new topic, or extend the existing one if the page continues it).
-2. Decide what to add yourself: the topic's new vocabulary (words and useful phrases), not every word on the page.
-   Skip words that are already in earlier sets.
-3. Add `ru`, `tr`, and an `ex` + `exRu` example that follows the vocabulary rule.
-4. Record the page in the set's `"source"` (e.g. "Book, pp. 12–13"). Commit and push, then report what was added.
+1. Find the page number and heading. Vocabulary pages and the grammar page that follows them belong to the same topic;
+   a new vocabulary page after a topic's grammar/exercises starts the next topic.
+2. Vocabulary page → add new words to the right theme (skip words already in this or earlier topics).
+   Grammar page → write the grammar section (short rule, table, examples; include the owner's handwritten notes)
+   and add its words to vocabulary. Exercise page → turn useful exercises into RU → EN tasks.
+3. Every grammar section should have tasks (aim for 8–15 per section) that follow the vocabulary rule.
+4. Update the topic's `"pages"`, run `python3 tools/check.py`, commit and push, then report what was added.

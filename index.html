@@ -175,21 +175,74 @@ textarea#answer:focus { border-color: var(--accent); }
 .chip .n { opacity: .6; margin-left: 4px; font-variant-numeric: tabular-nums; }
 .fb .ex { font-style: italic; color: var(--ink); opacity: .85; font-size: .92rem; overflow-wrap: anywhere; }
 .tx { color: var(--muted); font-weight: 400; margin-left: 6px; }
+
+/* ===== topics version ===== */
+.topicrow { grid-template-columns: auto 1fr auto; }
+.topicrow .ord { grid-row: span 2; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--paper); border: 1.5px solid var(--rule); font: 700 1rem var(--f-body); color: var(--accent); }
+.topicrow .t small { display: block; font-weight: 400; font-size: .8rem; color: var(--muted); margin-top: 1px; }
+.topicrow:hover { border-color: var(--accent); }
+.panel { display: flex; flex-direction: column; gap: 14px; }
+.tabs button { font-size: .88rem; padding: 10px 8px; }
+#topic .ctx-mode { line-height: 1.25; text-wrap: balance; }
+
+/* grammar */
+.gram { gap: 10px; scroll-margin-top: 12px; }
+.gram h2 { margin: 0; font-size: 1.15rem; line-height: 1.3; text-wrap: balance; }
+.gram h3 { margin: 6px 0 0; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.gram p { margin: 0; overflow-wrap: anywhere; }
+.gram ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 3px; }
+.tblwrap { overflow-x: auto; margin: 0 -4px; }
+.gram table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.gram th, .gram td { border-bottom: 1px solid var(--rule); padding: 7px 6px; text-align: left; vertical-align: top; }
+.gram th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+.gram tr:last-child td { border-bottom: 0; }
+.examples { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; display: flex; flex-direction: column; gap: 4px; }
+.examples .ru { color: var(--muted); }
+.tip { background: var(--paper); border-radius: 10px; padding: 10px 12px; font-size: .92rem; }
+.tip::before { content: "✎ "; color: var(--pen); font-weight: 700; }
+.gram s { color: var(--pen); }
+.practise { align-self: flex-start; padding: 9px 14px; font-size: .9rem; }
+.jump { position: sticky; top: 0; z-index: 2; background: var(--paper); padding: 6px 0; margin: -6px 0; }
+
+/* vocabulary */
+.theme { background: var(--sheet); border: 1.5px solid var(--rule); border-radius: 14px; }
+.theme summary { list-style: none; display: grid; grid-template-columns: auto 1fr auto auto; grid-template-areas: "chev name num go" "chev bar bar go";
+  align-items: center; gap: 4px 10px; padding: 12px 12px 12px 14px; cursor: pointer; }
+.theme summary::-webkit-details-marker { display: none; }
+.theme .chev { grid-area: chev; color: var(--muted); transition: transform .15s; font-size: .8rem; }
+.theme[open] .chev { transform: rotate(90deg); }
+.theme .th-name { grid-area: name; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.theme .th-num { grid-area: num; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.theme .mini { grid-area: bar; height: 5px; border-radius: 9px; background: var(--rule); overflow: hidden; }
+.theme .mini span, .topicrow .mini span { display: block; height: 100%; background: var(--good); }
+.theme .th-go { grid-area: go; border: 0; border-radius: 10px; padding: 8px 12px; background: var(--accent); color: var(--accent-ink); font: 600 .85rem var(--f-body); cursor: pointer; }
+.wordlist { list-style: none; margin: 0; padding: 0 14px 8px; }
+.wordlist li { display: grid; grid-template-columns: 8px 1fr; gap: 2px 10px; padding: 8px 0; border-top: 1px solid var(--rule); cursor: pointer; }
+.wordlist .st { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; grid-row: span 2; }
+.wordlist b { font-weight: 600; overflow-wrap: anywhere; }
+.wordlist .wru { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .theme .chev { transition: none; } }
+
+/* tasks */
+.intro { margin: 0; color: var(--muted); font-size: .92rem; }
+.rulelink { align-self: flex-start; text-align: left; background: none; border: 0; padding: 4px 0; color: var(--accent); font: 600 .9rem var(--f-body); cursor: pointer; }
+.theme summary:focus-visible, .th-go:focus-visible, .rulelink:focus-visible, .wordlist li:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div id="loading" class="notice">Loading words…</div>
+  <div id="loading" class="notice">Loading…</div>
   <div id="loadError" class="notice bad" hidden></div>
 
-  <!-- ===== Screen 1: main menu ===== -->
+  <!-- ===== Screen 1: topics ===== -->
   <div id="menu" class="screen" hidden>
     <header>
       <div>
-        <h1>My English words</h1>
-        <p class="hello" id="hello">From the book and lessons · RU ↔ EN</p>
+        <h1>My English</h1>
+        <p class="hello" id="hello">Book topics · grammar, words, translation</p>
       </div>
-      <div class="score" id="totalScore" title="Learned words, all sets">– / –</div>
+      <div class="score" id="totalScore" title="Learned words, all topics">– / –</div>
     </header>
 
     <button class="continue" id="continueBtn" hidden>
@@ -199,30 +252,38 @@ textarea#answer:focus { border-color: var(--accent); }
     </button>
 
     <section>
-      <p class="label">1 · Word set</p>
-      <div class="rows" id="sets" role="radiogroup" aria-label="Word set"></div>
+      <p class="label">Topics</p>
+      <div class="rows" id="topicList"></div>
     </section>
 
-    <section id="topicSection" hidden>
-      <p class="label">2 · Topic</p>
-      <div class="chips wrap-chips" id="topics" role="radiogroup" aria-label="Topic"></div>
-    </section>
+    <div class="foot"><span id="storeInfo">Progress is saved in this browser</span></div>
+  </div>
 
-    <section>
-      <p class="label" id="modeLabel">3 · Choose how to practise</p>
-      <div class="tiles" id="modes" role="group" aria-label="Mode"></div>
-    </section>
-
+  <!-- ===== Screen 2: one topic ===== -->
+  <div id="topic" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" id="topicBack">← Topics</button>
+      <div class="ctx"><span class="ctx-mode" id="tTitle"></span><span class="ctx-set" id="tSub"></span></div>
+      <div class="score small" id="tScore" title="Learned words in this topic">– / –</div>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="Section">
+      <button role="tab" id="tab-grammar" data-tab="grammar">📖 Grammar</button>
+      <button role="tab" id="tab-vocab" data-tab="vocab">🃏 Vocabulary</button>
+      <button role="tab" id="tab-tasks" data-tab="tasks">✍️ Tasks</button>
+    </div>
+    <div class="panel" id="panel-grammar" role="tabpanel"></div>
+    <div class="panel" id="panel-vocab" role="tabpanel"></div>
+    <div class="panel" id="panel-tasks" role="tabpanel"></div>
     <div class="foot">
-      <span id="storeInfo">Progress is saved in this browser</span>
-      <span id="resetArea"><button class="link" id="resetBtn">Reset this set</button></span>
+      <span></span>
+      <span id="resetArea"><button class="link" id="resetBtn">Reset progress in this topic</button></span>
     </div>
   </div>
 
-  <!-- ===== Screen 2: practice ===== -->
+  <!-- ===== Screen 3: practice (Learn or Translate) ===== -->
   <div id="practice" class="screen" hidden>
     <div class="topbar">
-      <button class="back" id="backBtn">← Menu</button>
+      <button class="back" id="backBtn">← Back</button>
       <div class="ctx"><span class="ctx-mode" id="ctxMode"></span><span class="ctx-set" id="ctxSet"></span></div>
       <div class="score small" id="score" title="Learned in this selection">– / –</div>
     </div>
@@ -248,53 +309,61 @@ textarea#answer:focus { border-color: var(--accent); }
   </div>
 </div>
 
-<!-- ================= WORDS =================
-  One object in "sets" = one lesson or book page. The newest set shows first.
-  Item fields: id (never change it, progress is saved by it), en, ru,
-  optional: tr (transcription), ex (example sentence), exRu (its Russian translation), topic (key from "topics").
-  A set may also have "sentences": [{"id": "s01", "en": "...", "ru": "..."}] for the Sentences mode.
-  Book topics: one set per topic with "order": 1, 2, 3… (shown in book order). Exercises for a topic
-  use only words from that topic and earlier ones (see CLAUDE.md).
-  "a / b" in en = both answers accepted; "(to)" is optional when typing.
+<!--
+  DATA: the whole course lives in the JSON block below. Format and rules: README.md and CLAUDE.md.
+  {"topics": [{"id", "order", "title", "pages", "added",
+               "grammar": [{"id", "title", "body"}],        body: light markup (see README)
+               "themes":  {"key": "Theme name"},
+               "words":   [{"id", "en", "ru", "tr", "topic", "ex", "exRu"}],   topic = theme key
+               "tasks":   [{"id", "ru", "en": ["main answer", "other accepted answers"], "grammar"}]}]}
+  Run `python3 tools/check.py` after editing: tasks and examples may use only words from this topic and earlier ones.
 -->
 <script id="words" type="application/json">
 {
-  "sets": [
+  "topics": [
     {
       "id": "topic-01",
-      "title": "Topic 1 · Sounds & first words",
       "order": 1,
-      "source": "Book, pp. 14–20",
+      "title": "Topic 1 · Sounds & first words",
+      "pages": "14–20",
       "added": "2026-10-08",
-      "topics": {"people": "People & body", "food": "Food", "animals": "Animals", "things": "Things", "clothes": "Clothes", "numbers": "Numbers", "nature": "Nature & time", "describe": "Other words", "plurals": "Irregular plurals", "pluralonly": "Only plural", "uncount": "Only singular", "pronouns": "Pronouns & verbs"},
-      "items": [
+      "themes": {"people": "People & body", "food": "Food", "animals": "Animals", "things": "Things", "clothes": "Clothes", "numbers": "Numbers", "nature": "Nature & time", "describe": "Other words", "plurals": "Irregular plurals", "pluralonly": "Only plural", "uncount": "Only singular", "pronouns": "Pronouns & verbs"},
+      "grammar": [
+        {"id": "g-article", "title": "Неопределённый артикль a / an",
+         "body": "Артикль **a / an** произошёл от слова *one* — «один». Он ставится только перед **исчисляемым** существительным **в единственном числе** и значит «один из многих, какой-то, любой».\n\n> I can't find a taxi. — Не могу найти такси. (Какое? Любое.)\n\nВо множественном числе артикль не ставится:\n\n> a book → books\n\n### a или an?\n| a [ə] — перед согласным звуком | an [ən] — перед гласным звуком |\n| a bus | an uncle |\n| a plate | an umbrella |\n| a year | an hour |\n\n! Смотрим на **звук**, а не на букву. *Hour* начинается с гласного звука [aʊ], поэтому **an hour**. *Year* начинается с согласного [j], поэтому **a year**."},
+        {"id": "g-plural", "title": "Множественное число существительных",
+         "body": "Множественное число образуется окончанием **-s** или **-es**. Окончание читается по-разному:\n\n| Звук | Когда | Примеры |\n| [s] | после глухих согласных | weeks, plates, cakes, forks |\n| [z] | после звонких согласных и гласных | days, games, trees, names |\n| [ɪz] | после s, ss, sh, ch, x и свистящих | boxes, dresses, watches, faces |\n\n### Особые формы\n| Один | Много |\n| a man — мужчина | men |\n| a woman — женщина | women |\n| a child — ребёнок | children |\n| a foot — ступня | feet |\n| a tooth — зуб | teeth |\n| a mouse — мышь | mice |\n| a person — человек | people |\n| a goose — гусь | geese |\n\nНе меняются совсем: **fish, sheep, deer**.\n\n> one fish — three fish, one sheep — nine sheep\n\n### Только множественное число\n**clothes, trousers, pyjamas, glasses, jeans, tights, scissors, goods, police** — после них глагол во множественном числе (*are*):\n\n> The scissors are on the desk.\n> My jeans are in the box.\n\n### Только единственное число\n**hair, money, advice, news, information, knowledge, music, fruit**, а также bread, butter, meat, water, milk, sugar, salt, rice, gold, luck, patience, progress, work, research, sleep, traffic, weather.\n\nПосле них глагол в единственном числе (*is*), и артикль **a / an не ставится**:\n\n> My hair is long. — Мои волосы длинные.\n> The money is in the box. — Деньги в коробке.\n\n! По-русски «волосы», «деньги», «фрукты» — множественное число, а по-английски **hair, money, fruit** — единственное."},
+        {"id": "g-pronouns", "title": "Местоимения: I — me — my",
+         "body": "У каждого местоимения три формы:\n\n| Кто? | Кого? Кому? | Чей? |\n| I — я | me — меня, мне | my — мой |\n| he — он | him — его, ему | his — его |\n| she — она | her — её, ей | her — её |\n| it — он, она, оно | it | its — его, её |\n| we — мы | us — нас, нам | our — наш |\n| you — ты, вы | you — тебя, вам | your — твой, ваш |\n| they — они | them — их, им | their — их |\n\n### После глагола — форма «кого? кому?»\n> Phone **me**! — Позвони мне!\n> Buy **him** a cake. — Купи ему торт.\n> Show **her** the book. — Покажи ей книгу.\n> Pass **them** the bread. — Передай им хлеб.\n> I know **them**. — Я их знаю.\n\n### Перед существительным — форма «чей?»\n> **my** book, **his** car, **our** house, **their** dog\n\n! **it / its** — для предметов и животных: The dog has got **its** ball."}
+      ],
+      "words": [
         {"id": "w001", "en": "hamburger", "ru": "гамбургер", "tr": "/ˈhæmbɜːɡə/", "topic": "food", "ex": "I have got a hamburger.", "exRu": "У меня есть гамбургер."},
-        {"id": "w002", "en": "hand", "ru": "рука (кисть)", "tr": "/hænd/", "topic": "people", "ex": "This is my hand.", "exRu": "Это моя рука."},
+        {"id": "w002", "en": "hand", "ru": "рука (кисть)", "tr": "/hænd/", "topic": "people", "ex": "It is my hand.", "exRu": "Это моя рука."},
         {"id": "w003", "en": "honey", "ru": "мёд", "tr": "/ˈhʌni/", "topic": "food", "ex": "I have got honey and butter.", "exRu": "У меня есть мёд и масло."},
-        {"id": "w004", "en": "headphones", "ru": "наушники", "tr": "/ˈhedfəʊnz/", "topic": "things", "ex": "These are my headphones.", "exRu": "Это мои наушники."},
-        {"id": "w005", "en": "picture", "ru": "картина, картинка", "tr": "/ˈpɪktʃə/", "topic": "things", "ex": "This is a picture of a house.", "exRu": "Это картина с домом."},
+        {"id": "w004", "en": "headphones", "ru": "наушники", "tr": "/ˈhedfəʊnz/", "topic": "things", "ex": "My headphones are on the desk.", "exRu": "Мои наушники на парте."},
+        {"id": "w005", "en": "picture", "ru": "картина, картинка", "tr": "/ˈpɪktʃə/", "topic": "things", "ex": "It is a picture of a house.", "exRu": "Это картина с домом."},
         {"id": "w006", "en": "pen", "ru": "ручка", "tr": "/pen/", "topic": "things", "ex": "I have got a pen and a pencil.", "exRu": "У меня есть ручка и карандаш."},
         {"id": "w007", "en": "pencil", "ru": "карандаш", "tr": "/ˈpensl/", "topic": "things", "ex": "The pencil is on the desk.", "exRu": "Карандаш на парте."},
         {"id": "w008", "en": "pan", "ru": "сковорода", "tr": "/pæn/", "topic": "things", "ex": "My mother has got a pan.", "exRu": "У моей мамы есть сковорода."},
         {"id": "w009", "en": "walkman", "ru": "плеер", "tr": "/ˈwɔːkmən/", "topic": "things", "ex": "My brother has got a walkman.", "exRu": "У моего брата есть плеер."},
-        {"id": "w010", "en": "watch", "ru": "часы (наручные)", "tr": "/wɒtʃ/", "topic": "things", "ex": "This is my father's watch.", "exRu": "Это часы моего папы."},
+        {"id": "w010", "en": "watch", "ru": "часы (наручные)", "tr": "/wɒtʃ/", "topic": "things", "ex": "It is my father's watch.", "exRu": "Это часы моего папы."},
         {"id": "w011", "en": "window", "ru": "окно", "tr": "/ˈwɪndəʊ/", "topic": "things", "ex": "The cat is in the window.", "exRu": "Кошка в окне."},
-        {"id": "w012", "en": "woman", "ru": "женщина", "tr": "/ˈwʊmən/", "topic": "people", "ex": "This woman is a cook.", "exRu": "Эта женщина — повар."},
+        {"id": "w012", "en": "woman", "ru": "женщина", "tr": "/ˈwʊmən/", "topic": "people", "ex": "The woman is a cook.", "exRu": "Женщина — повар."},
         {"id": "w013", "en": "three", "ru": "три", "tr": "/θriː/", "topic": "numbers", "ex": "I have got three apples.", "exRu": "У меня есть три яблока."},
         {"id": "w014", "en": "thin", "ru": "худой, тонкий", "tr": "/θɪn/", "topic": "describe", "ex": "The girl is thin.", "exRu": "Девочка худая."},
         {"id": "w015", "en": "month", "ru": "месяц", "tr": "/mʌnθ/", "topic": "nature", "ex": "It is a long month.", "exRu": "Это длинный месяц."},
-        {"id": "w016", "en": "mouth", "ru": "рот", "tr": "/maʊθ/", "topic": "people", "ex": "This is my mouth.", "exRu": "Это мой рот."},
-        {"id": "w017", "en": "mother", "ru": "мама, мать", "tr": "/ˈmʌðə/", "topic": "people", "ex": "This is my mother.", "exRu": "Это моя мама."},
-        {"id": "w018", "en": "father", "ru": "папа, отец", "tr": "/ˈfɑːðə/", "topic": "people", "ex": "This is my father.", "exRu": "Это мой папа."},
+        {"id": "w016", "en": "mouth", "ru": "рот", "tr": "/maʊθ/", "topic": "people", "ex": "It is my mouth.", "exRu": "Это мой рот."},
+        {"id": "w017", "en": "mother", "ru": "мама, мать", "tr": "/ˈmʌðə/", "topic": "people", "ex": "My mother is a cook.", "exRu": "Моя мама — повар."},
+        {"id": "w018", "en": "father", "ru": "папа, отец", "tr": "/ˈfɑːðə/", "topic": "people", "ex": "My father has got a car.", "exRu": "У моего папы есть машина."},
         {"id": "w019", "en": "brother", "ru": "брат", "tr": "/ˈbrʌðə/", "topic": "people", "ex": "My brother has got a dog.", "exRu": "У моего брата есть собака."},
         {"id": "w020", "en": "teapot", "ru": "заварочный чайник", "tr": "/ˈtiːpɒt/", "topic": "things", "ex": "The teapot is open.", "exRu": "Чайник открыт."},
         {"id": "w021", "en": "tennis", "ru": "теннис", "tr": "/ˈtenɪs/", "topic": "describe", "ex": "I have got a tennis ball.", "exRu": "У меня есть теннисный мяч."},
-        {"id": "w022", "en": "tie", "ru": "галстук", "tr": "/taɪ/", "topic": "clothes", "ex": "This is my father's tie.", "exRu": "Это галстук моего папы."},
+        {"id": "w022", "en": "tie", "ru": "галстук", "tr": "/taɪ/", "topic": "clothes", "ex": "It is my father's tie.", "exRu": "Это галстук моего папы."},
         {"id": "w023", "en": "tangerine", "ru": "мандарин", "tr": "/ˌtændʒəˈriːn/", "topic": "food", "ex": "I have got two tangerines.", "exRu": "У меня есть два мандарина."},
         {"id": "w024", "en": "desk", "ru": "парта, письменный стол", "tr": "/desk/", "topic": "things", "ex": "The book is on the desk.", "exRu": "Книга на парте."},
         {"id": "w025", "en": "doll", "ru": "кукла", "tr": "/dɒl/", "topic": "things", "ex": "The girl has got a doll.", "exRu": "У девочки есть кукла."},
         {"id": "w026", "en": "dolphin", "ru": "дельфин", "tr": "/ˈdɒlfɪn/", "topic": "animals", "ex": "The dolphin is in the sea.", "exRu": "Дельфин в море."},
-        {"id": "w027", "en": "dress", "ru": "платье", "tr": "/dres/", "topic": "clothes", "ex": "This is my mother's dress.", "exRu": "Это мамино платье."},
+        {"id": "w027", "en": "dress", "ru": "платье", "tr": "/dres/", "topic": "clothes", "ex": "It is my mother's dress.", "exRu": "Это мамино платье."},
         {"id": "w028", "en": "nine", "ru": "девять", "tr": "/naɪn/", "topic": "numbers", "ex": "I have got nine pencils.", "exRu": "У меня есть девять карандашей."},
         {"id": "w029", "en": "ocean", "ru": "океан", "tr": "/ˈəʊʃn/", "topic": "nature", "ex": "Is it the sea or the ocean?", "exRu": "Это море или океан?"},
         {"id": "w030", "en": "one", "ru": "один", "tr": "/wʌn/", "topic": "numbers", "ex": "I have got one brother.", "exRu": "У меня есть один брат."},
@@ -308,13 +377,13 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w038", "en": "crow", "ru": "ворона", "tr": "/krəʊ/", "topic": "animals", "ex": "The crow is in the tree.", "exRu": "Ворона на дереве."},
         {"id": "w039", "en": "recorder", "ru": "магнитофон", "tr": "/rɪˈkɔːdə/", "topic": "things", "ex": "My brother has got a recorder.", "exRu": "У моего брата есть магнитофон."},
         {"id": "w040", "en": "swimming", "ru": "плавание", "tr": "/ˈswɪmɪŋ/", "topic": "describe"},
-        {"id": "w041", "en": "long", "ru": "длинный", "tr": "/lɒŋ/", "topic": "describe", "ex": "This is a long ruler.", "exRu": "Это длинная линейка."},
+        {"id": "w041", "en": "long", "ru": "длинный", "tr": "/lɒŋ/", "topic": "describe", "ex": "It is a long ruler.", "exRu": "Это длинная линейка."},
         {"id": "w042", "en": "morning", "ru": "утро", "tr": "/ˈmɔːnɪŋ/", "topic": "nature", "ex": "It is morning.", "exRu": "Сейчас утро."},
         {"id": "w043", "en": "evening", "ru": "вечер", "tr": "/ˈiːvnɪŋ/", "topic": "nature", "ex": "It is evening.", "exRu": "Сейчас вечер."},
         {"id": "w044", "en": "bee", "ru": "пчела", "tr": "/biː/", "topic": "animals", "ex": "The bee is on the tree.", "exRu": "Пчела на дереве."},
         {"id": "w045", "en": "tree", "ru": "дерево", "tr": "/triː/", "topic": "nature", "ex": "The cat is in the tree.", "exRu": "Кошка на дереве."},
         {"id": "w046", "en": "sea", "ru": "море", "tr": "/siː/", "topic": "nature", "ex": "The duck is in the sea.", "exRu": "Утка в море."},
-        {"id": "w047", "en": "pig", "ru": "свинья", "tr": "/pɪɡ/", "topic": "animals", "ex": "This is a pig, not a dog.", "exRu": "Это свинья, а не собака."},
+        {"id": "w047", "en": "pig", "ru": "свинья", "tr": "/pɪɡ/", "topic": "animals", "ex": "It is a pig, not a dog.", "exRu": "Это свинья, а не собака."},
         {"id": "w048", "en": "six", "ru": "шесть", "tr": "/sɪks/", "topic": "numbers", "ex": "I have got six books.", "exRu": "У меня есть шесть книг."},
         {"id": "w049", "en": "chicken", "ru": "цыплёнок, курица", "tr": "/ˈtʃɪkɪn/", "topic": "animals", "ex": "The chicken is in the box.", "exRu": "Цыплёнок в коробке."},
         {"id": "w050", "en": "tent", "ru": "палатка", "tr": "/tent/", "topic": "things", "ex": "We have got a tent.", "exRu": "У нас есть палатка."},
@@ -322,12 +391,12 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w052", "en": "ten", "ru": "десять", "tr": "/ten/", "topic": "numbers", "ex": "I have got ten pens.", "exRu": "У меня есть десять ручек."},
         {"id": "w053", "en": "cat", "ru": "кошка, кот", "tr": "/kæt/", "topic": "animals", "ex": "I have got a cat.", "exRu": "У меня есть кошка."},
         {"id": "w054", "en": "parrot", "ru": "попугай", "tr": "/ˈpærət/", "topic": "animals", "ex": "My brother has got a parrot.", "exRu": "У моего брата есть попугай."},
-        {"id": "w055", "en": "apple", "ru": "яблоко", "tr": "/ˈæpl/", "topic": "food", "ex": "This is an apple.", "exRu": "Это яблоко."},
+        {"id": "w055", "en": "apple", "ru": "яблоко", "tr": "/ˈæpl/", "topic": "food", "ex": "It is an apple.", "exRu": "Это яблоко."},
         {"id": "w056", "en": "carrot", "ru": "морковь", "tr": "/ˈkærət/", "topic": "food", "ex": "I have got three carrots.", "exRu": "У меня есть три морковки."},
-        {"id": "w057", "en": "shoe", "ru": "туфля, ботинок", "tr": "/ʃuː/", "topic": "clothes", "ex": "This is my mother's shoe.", "exRu": "Это мамина туфля."},
+        {"id": "w057", "en": "shoe", "ru": "туфля, ботинок", "tr": "/ʃuː/", "topic": "clothes", "ex": "It is my mother's shoe.", "exRu": "Это мамина туфля."},
         {"id": "w058", "en": "two", "ru": "два", "tr": "/tuː/", "topic": "numbers", "ex": "I have got two cats.", "exRu": "У меня есть две кошки."},
         {"id": "w059", "en": "ruler", "ru": "линейка", "tr": "/ˈruːlə/", "topic": "things", "ex": "The ruler is in the box.", "exRu": "Линейка в коробке."},
-        {"id": "w060", "en": "book", "ru": "книга", "tr": "/bʊk/", "topic": "things", "ex": "This is my book.", "exRu": "Это моя книга."},
+        {"id": "w060", "en": "book", "ru": "книга", "tr": "/bʊk/", "topic": "things", "ex": "It is my book.", "exRu": "Это моя книга."},
         {"id": "w061", "en": "cook", "ru": "повар", "tr": "/kʊk/", "topic": "people", "ex": "My father is a cook.", "exRu": "Мой папа — повар."},
         {"id": "w062", "en": "four", "ru": "четыре", "tr": "/fɔː/", "topic": "numbers", "ex": "I have got four socks.", "exRu": "У меня есть четыре носка."},
         {"id": "w063", "en": "chalk", "ru": "мел", "tr": "/tʃɔːk/", "topic": "things", "ex": "The chalk is on the desk.", "exRu": "Мел на парте."},
@@ -335,11 +404,11 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w065", "en": "ball", "ru": "мяч", "tr": "/bɔːl/", "topic": "things", "ex": "The dog has got a ball.", "exRu": "У собаки есть мяч."},
         {"id": "w066", "en": "dog", "ru": "собака", "tr": "/dɒɡ/", "topic": "animals", "ex": "I have got a dog.", "exRu": "У меня есть собака."},
         {"id": "w067", "en": "box", "ru": "коробка", "tr": "/bɒks/", "topic": "things", "ex": "The ball is in the box.", "exRu": "Мяч в коробке."},
-        {"id": "w068", "en": "clock", "ru": "часы (настенные)", "tr": "/klɒk/", "topic": "things", "ex": "This is a clock, not a watch.", "exRu": "Это настенные часы, а не наручные."},
-        {"id": "w069", "en": "sock", "ru": "носок", "tr": "/sɒk/", "topic": "clothes", "ex": "This is my sock.", "exRu": "Это мой носок."},
+        {"id": "w068", "en": "clock", "ru": "часы (настенные)", "tr": "/klɒk/", "topic": "things", "ex": "It is a clock, not a watch.", "exRu": "Это часы (настенные), а не наручные."},
+        {"id": "w069", "en": "sock", "ru": "носок", "tr": "/sɒk/", "topic": "clothes", "ex": "It is my sock.", "exRu": "Это мой носок."},
         {"id": "w070", "en": "girl", "ru": "девочка", "tr": "/ɡɜːl/", "topic": "people", "ex": "The girl has got a cat.", "exRu": "У девочки есть кошка."},
         {"id": "w071", "en": "thirteen", "ru": "тринадцать", "tr": "/ˌθɜːˈtiːn/", "topic": "numbers", "ex": "I have got thirteen books.", "exRu": "У меня есть тринадцать книг."},
-        {"id": "w072", "en": "turkey", "ru": "индейка", "tr": "/ˈtɜːki/", "topic": "animals", "ex": "This is a turkey, not a chicken.", "exRu": "Это индейка, а не курица."},
+        {"id": "w072", "en": "turkey", "ru": "индейка", "tr": "/ˈtɜːki/", "topic": "animals", "ex": "It is a turkey, not a chicken.", "exRu": "Это индейка, а не курица."},
         {"id": "w073", "en": "bird", "ru": "птица", "tr": "/bɜːd/", "topic": "animals", "ex": "The bird is on the window.", "exRu": "Птица на окне."},
         {"id": "w074", "en": "camera", "ru": "фотоаппарат", "tr": "/ˈkæmərə/", "topic": "things", "ex": "My father has got a camera.", "exRu": "У моего папы есть фотоаппарат."},
         {"id": "w075", "en": "butter", "ru": "масло (сливочное)", "tr": "/ˈbʌtə/", "topic": "food", "ex": "The butter is on the plate.", "exRu": "Масло на тарелке."},
@@ -352,24 +421,24 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w082", "en": "banana", "ru": "банан", "tr": "/bəˈnɑːnə/", "topic": "food", "ex": "I have got two bananas.", "exRu": "У меня есть два банана."},
         {"id": "w083", "en": "tomato", "ru": "помидор", "tr": "/təˈmɑːtəʊ/", "topic": "food", "ex": "I have got four tomatoes.", "exRu": "У меня есть четыре помидора."},
         {"id": "w084", "en": "plate", "ru": "тарелка", "tr": "/pleɪt/", "topic": "things", "ex": "The cake is on the plate.", "exRu": "Торт на тарелке."},
-        {"id": "w085", "en": "cake", "ru": "торт", "tr": "/keɪk/", "topic": "food", "ex": "This is my cake.", "exRu": "Это мой торт."},
+        {"id": "w085", "en": "cake", "ru": "торт", "tr": "/keɪk/", "topic": "food", "ex": "It is my cake.", "exRu": "Это мой торт."},
         {"id": "w086", "en": "fly", "ru": "муха", "tr": "/flaɪ/", "topic": "animals", "ex": "The fly is on the cake.", "exRu": "Муха на торте."},
-        {"id": "w087", "en": "house", "ru": "дом", "tr": "/haʊs/", "topic": "things", "ex": "This is my house.", "exRu": "Это мой дом."},
-        {"id": "w088", "en": "blouse", "ru": "блузка", "tr": "/blaʊz/", "topic": "clothes", "ex": "This is my mother's blouse.", "exRu": "Это мамина блузка."},
+        {"id": "w087", "en": "house", "ru": "дом", "tr": "/haʊs/", "topic": "things", "ex": "It is my house.", "exRu": "Это мой дом."},
+        {"id": "w088", "en": "blouse", "ru": "блузка", "tr": "/blaʊz/", "topic": "clothes", "ex": "It is my mother's blouse.", "exRu": "Это мамина блузка."},
         {"id": "w089", "en": "coat", "ru": "пальто", "tr": "/kəʊt/", "topic": "clothes", "ex": "My father has got a coat.", "exRu": "У моего папы есть пальто."},
         {"id": "w090", "en": "open", "ru": "открытый; открывать", "tr": "/ˈəʊpən/", "topic": "describe", "ex": "The window is open.", "exRu": "Окно открыто."},
-        {"id": "w091", "en": "man", "ru": "мужчина", "tr": "/mæn/", "topic": "plurals", "ex": "This man has got a dog.", "exRu": "У этого мужчины есть собака."},
+        {"id": "w091", "en": "man", "ru": "мужчина", "tr": "/mæn/", "topic": "plurals", "ex": "The man has got a dog.", "exRu": "У мужчины есть собака."},
         {"id": "w092", "en": "men", "ru": "мужчины", "tr": "/men/", "topic": "plurals", "ex": "The men are in the house.", "exRu": "Мужчины в доме."},
         {"id": "w093", "en": "women", "ru": "женщины", "tr": "/ˈwɪmɪn/", "topic": "plurals", "ex": "The women have got cakes.", "exRu": "У женщин есть торты."},
         {"id": "w094", "en": "child", "ru": "ребёнок", "tr": "/tʃaɪld/", "topic": "plurals", "ex": "The child has got a ball.", "exRu": "У ребёнка есть мяч."},
         {"id": "w095", "en": "children", "ru": "дети", "tr": "/ˈtʃɪldrən/", "topic": "plurals", "ex": "I have got two children.", "exRu": "У меня двое детей."},
-        {"id": "w096", "en": "foot", "ru": "ступня, нога", "tr": "/fʊt/", "topic": "plurals", "ex": "This is my foot.", "exRu": "Это моя ступня."},
+        {"id": "w096", "en": "foot", "ru": "ступня, нога", "tr": "/fʊt/", "topic": "plurals", "ex": "It is my foot.", "exRu": "Это моя ступня."},
         {"id": "w097", "en": "feet", "ru": "ступни, ноги", "tr": "/fiːt/", "topic": "plurals", "ex": "I have got two feet.", "exRu": "У меня две ступни."},
-        {"id": "w098", "en": "tooth", "ru": "зуб", "tr": "/tuːθ/", "topic": "plurals", "ex": "This is my tooth.", "exRu": "Это мой зуб."},
+        {"id": "w098", "en": "tooth", "ru": "зуб", "tr": "/tuːθ/", "topic": "plurals", "ex": "It is my tooth.", "exRu": "Это мой зуб."},
         {"id": "w099", "en": "teeth", "ru": "зубы", "tr": "/tiːθ/", "topic": "plurals", "ex": "The dog has got long teeth.", "exRu": "У собаки длинные зубы."},
         {"id": "w100", "en": "mouse", "ru": "мышь", "tr": "/maʊs/", "topic": "plurals", "ex": "The mouse is in the box.", "exRu": "Мышь в коробке."},
         {"id": "w101", "en": "mice", "ru": "мыши", "tr": "/maɪs/", "topic": "plurals", "ex": "The cat has got two mice.", "exRu": "У кошки две мыши."},
-        {"id": "w102", "en": "person", "ru": "человек", "tr": "/ˈpɜːsn/", "topic": "plurals", "ex": "This person is a cook.", "exRu": "Этот человек — повар."},
+        {"id": "w102", "en": "person", "ru": "человек", "tr": "/ˈpɜːsn/", "topic": "plurals", "ex": "The person is a cook.", "exRu": "Этот человек — повар."},
         {"id": "w103", "en": "people", "ru": "люди", "tr": "/ˈpiːpl/", "topic": "plurals", "ex": "Six people are in the bus.", "exRu": "В автобусе шесть человек."},
         {"id": "w104", "en": "goose", "ru": "гусь", "tr": "/ɡuːs/", "topic": "plurals", "ex": "The goose is in the sea.", "exRu": "Гусь в море."},
         {"id": "w105", "en": "geese", "ru": "гуси", "tr": "/ɡiːs/", "topic": "plurals", "ex": "Ten geese are on the tree.", "exRu": "Десять гусей на дереве."},
@@ -414,38 +483,78 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w144", "en": "her", "ru": "её, ей", "tr": "/hɜː/", "topic": "pronouns", "ex": "Show her the picture.", "exRu": "Покажи ей картинку."},
         {"id": "w145", "en": "us", "ru": "нас, нам", "tr": "/ʌs/", "topic": "pronouns", "ex": "Invite us!", "exRu": "Пригласи нас!"},
         {"id": "w146", "en": "them", "ru": "их, им", "tr": "/ðem/", "topic": "pronouns", "ex": "Pass them the butter.", "exRu": "Передай им масло."},
-        {"id": "w147", "en": "his", "ru": "его (чей?)", "tr": "/hɪz/", "topic": "pronouns", "ex": "This is his car.", "exRu": "Это его машина."},
+        {"id": "w147", "en": "his", "ru": "его (чей?)", "tr": "/hɪz/", "topic": "pronouns", "ex": "It is his car.", "exRu": "Это его машина."},
         {"id": "w148", "en": "its", "ru": "его, её (о предмете, животном)", "tr": "/ɪts/", "topic": "pronouns", "ex": "The dog has got its ball.", "exRu": "У собаки есть свой мяч."},
-        {"id": "w149", "en": "our", "ru": "наш", "tr": "/ˈaʊə/", "topic": "pronouns", "ex": "This is our house.", "exRu": "Это наш дом."},
-        {"id": "w150", "en": "their", "ru": "их (чей?)", "tr": "/ðeə/", "topic": "pronouns", "ex": "This is their dog.", "exRu": "Это их собака."},
+        {"id": "w149", "en": "our", "ru": "наш", "tr": "/ˈaʊə/", "topic": "pronouns", "ex": "It is our house.", "exRu": "Это наш дом."},
+        {"id": "w150", "en": "their", "ru": "их (чей?)", "tr": "/ðeə/", "topic": "pronouns", "ex": "It is their dog.", "exRu": "Это их собака."},
         {"id": "w151", "en": "pass", "ru": "передайте", "tr": "/pɑːs/", "topic": "pronouns", "ex": "Pass me the bread.", "exRu": "Передай мне хлеб."},
         {"id": "w152", "en": "phone", "ru": "позвоните", "tr": "/fəʊn/", "topic": "pronouns", "ex": "Phone him!", "exRu": "Позвони ему!"},
         {"id": "w153", "en": "buy", "ru": "купите", "tr": "/baɪ/", "topic": "pronouns", "ex": "Buy me a melon.", "exRu": "Купи мне дыню."},
         {"id": "w154", "en": "show", "ru": "покажите", "tr": "/ʃəʊ/", "topic": "pronouns", "ex": "Show us the book.", "exRu": "Покажи нам книгу."},
         {"id": "w155", "en": "invite", "ru": "пригласите", "tr": "/ɪnˈvaɪt/", "topic": "pronouns", "ex": "Invite her!", "exRu": "Пригласи её!"},
         {"id": "w156", "en": "ask", "ru": "спросите", "tr": "/ɑːsk/", "topic": "pronouns", "ex": "Ask them!", "exRu": "Спроси их!"},
-        {"id": "w157", "en": "I know", "ru": "я знаю", "tr": "/aɪ nəʊ/", "topic": "pronouns", "ex": "I know them.", "exRu": "Я их знаю."}
+        {"id": "w157", "en": "I know", "ru": "я знаю", "tr": "/aɪ nəʊ/", "topic": "pronouns", "ex": "I know them.", "exRu": "Я их знаю."},
+        {"id": "w158", "en": "uncle", "ru": "дядя", "tr": "/ˈʌŋkl/", "topic": "people", "ex": "My uncle has got a car.", "exRu": "У моего дяди есть машина."},
+        {"id": "w159", "en": "hour", "ru": "час", "tr": "/ˈaʊə/", "topic": "nature", "ex": "I have got an hour.", "exRu": "У меня есть час."},
+        {"id": "w160", "en": "year", "ru": "год", "tr": "/jɪə/", "topic": "nature", "ex": "It is a long year.", "exRu": "Это длинный год."}
       ],
-      "sentences": [
-        {"id": "s01", "en": "I have got an apple and a banana.", "ru": "У меня есть яблоко и банан."},
-        {"id": "s02", "en": "I have got an onion and a tomato.", "ru": "У меня есть луковица и помидор."},
-        {"id": "s03", "en": "It is an hour.", "ru": "Это час."},
-        {"id": "s04", "en": "I have got three books and two boxes.", "ru": "У меня есть три книги и две коробки."},
-        {"id": "s05", "en": "I have got two watches.", "ru": "У меня двое часов."},
-        {"id": "s06", "en": "The children have got a dog.", "ru": "У детей есть собака."},
-        {"id": "s07", "en": "The women have got four cats.", "ru": "У женщин четыре кошки."},
-        {"id": "s08", "en": "Buy me a cake.", "ru": "Купи мне торт."},
-        {"id": "s09", "en": "Show him the picture.", "ru": "Покажи ему картинку."}
+      "tasks": [
+        {"id": "t01", "ru": "У меня есть яблоко.", "en": ["I have got an apple.", "I've got an apple."], "grammar": "g-article"},
+        {"id": "t02", "ru": "У меня есть банан и луковица.", "en": ["I have got a banana and an onion.", "I've got a banana and an onion."], "grammar": "g-article"},
+        {"id": "t03", "ru": "У моей мамы есть торт и яблоко.", "en": ["My mother has got a cake and an apple.", "My mum has got a cake and an apple."], "grammar": "g-article"},
+        {"id": "t04", "ru": "У девочки есть кукла и мяч.", "en": ["The girl has got a doll and a ball.", "A girl has got a doll and a ball."], "grammar": "g-article"},
+        {"id": "t05", "ru": "У моего дяди есть машина.", "en": ["My uncle has got a car."], "grammar": "g-article"},
+        {"id": "t06", "ru": "У меня есть час.", "en": ["I have got an hour.", "I've got an hour."], "grammar": "g-article"},
+        {"id": "t07", "ru": "У меня есть дядя и брат.", "en": ["I have got an uncle and a brother.", "I've got an uncle and a brother."], "grammar": "g-article"},
+        {"id": "t08", "ru": "У меня есть три коробки.", "en": ["I have got three boxes.", "I've got three boxes."], "grammar": "g-plural"},
+        {"id": "t09", "ru": "У меня есть шесть яблок и девять бананов.", "en": ["I have got six apples and nine bananas.", "I've got six apples and nine bananas."], "grammar": "g-plural"},
+        {"id": "t10", "ru": "У кошки есть две мыши.", "en": ["The cat has got two mice."], "grammar": "g-plural"},
+        {"id": "t11", "ru": "У женщин есть дети.", "en": ["The women have got children."], "grammar": "g-plural"},
+        {"id": "t12", "ru": "У мужчины есть четыре гуся.", "en": ["The man has got four geese."], "grammar": "g-plural"},
+        {"id": "t13", "ru": "У девочки есть две рыбы.", "en": ["The girl has got two fish."], "grammar": "g-plural"},
+        {"id": "t14", "ru": "У собаки длинные зубы.", "en": ["The dog has got long teeth."], "grammar": "g-plural"},
+        {"id": "t15", "ru": "Люди в автобусе.", "en": ["The people are in the bus.", "The people are on the bus."], "grammar": "g-plural"},
+        {"id": "t16", "ru": "У меня есть две ступни.", "en": ["I have got two feet.", "I've got two feet."], "grammar": "g-plural"},
+        {"id": "t17", "ru": "Мои джинсы в коробке.", "en": ["My jeans are in the box."], "grammar": "g-plural"},
+        {"id": "t18", "ru": "Ножницы на парте.", "en": ["The scissors are on the desk."], "grammar": "g-plural"},
+        {"id": "t19", "ru": "Мои очки на парте.", "en": ["My glasses are on the desk."], "grammar": "g-plural"},
+        {"id": "t20", "ru": "Мои волосы длинные.", "en": ["My hair is long."], "grammar": "g-plural"},
+        {"id": "t21", "ru": "Деньги в коробке.", "en": ["The money is in the box."], "grammar": "g-plural"},
+        {"id": "t22", "ru": "Фрукты на тарелке.", "en": ["The fruit is on the plate."], "grammar": "g-plural"},
+        {"id": "t23", "ru": "У меня есть хлеб и молоко.", "en": ["I have got bread and milk.", "I've got bread and milk."], "grammar": "g-plural"},
+        {"id": "t24", "ru": "Вода в стакане.", "en": ["The water is in the glass."], "grammar": "g-plural"},
+        {"id": "t25", "ru": "Позвони мне!", "en": ["Phone me!"], "grammar": "g-pronouns"},
+        {"id": "t26", "ru": "Купи ему торт.", "en": ["Buy him a cake."], "grammar": "g-pronouns"},
+        {"id": "t27", "ru": "Покажи ей книгу.", "en": ["Show her the book.", "Show her a book."], "grammar": "g-pronouns"},
+        {"id": "t28", "ru": "Пригласи нас!", "en": ["Invite us!"], "grammar": "g-pronouns"},
+        {"id": "t29", "ru": "Спроси их.", "en": ["Ask them."], "grammar": "g-pronouns"},
+        {"id": "t30", "ru": "Я его знаю.", "en": ["I know him."], "grammar": "g-pronouns"},
+        {"id": "t31", "ru": "Передай мне хлеб.", "en": ["Pass me the bread."], "grammar": "g-pronouns"},
+        {"id": "t32", "ru": "Её кошка на дереве.", "en": ["Her cat is in the tree.", "Her cat is on the tree."], "grammar": "g-pronouns"},
+        {"id": "t33", "ru": "Их собака в доме.", "en": ["Their dog is in the house."], "grammar": "g-pronouns"},
+        {"id": "t34", "ru": "У собаки есть свой мяч.", "en": ["The dog has got its ball."], "grammar": "g-pronouns"},
+        {"id": "t35", "ru": "Покажи им наш дом.", "en": ["Show them our house."], "grammar": "g-pronouns"},
+        {"id": "t36", "ru": "Купи нам дыню.", "en": ["Buy us a melon."], "grammar": "g-pronouns"}
       ]
     },
     {
       "id": "topic-02",
-      "title": "Topic 2 · To be, this & that, whose",
       "order": 2,
-      "source": "Book, pp. 25–28",
-      "topics": {"tobe": "To be + adjective", "wh": "Question words", "demo": "This / that / these / those", "pictures": "Picture words (p. 28)"},
-      "added": "2026-10-08",
-      "items": [
+      "title": "Topic 2 · Colours, animals & to be",
+      "pages": "24–28",
+      "added": "2026-10-11",
+      "themes": {"colours": "Colours", "numbers": "Numbers 0–10", "young": "Animals & their young", "pictures": "Picture words (p. 28)", "tobe": "To be + adjective", "wh": "Question words", "demo": "This / that / these / those", "poss": "Mine, yours, hers…"},
+      "grammar": [
+        {"id": "g-tobe", "title": "Глагол to be: am / is / are",
+         "body": "**to be** — быть, находиться, являться. По-русски в настоящем времени этот глагол пропускают («Я дома»), а по-английски он **обязателен**:\n\n> I **am** at home. — Я дома.\n\n| + | ? | − |\n| I am (I'm) | Am I? | I am not (I'm not) |\n| he / she / it is (he's) | Is he? | he is not (isn't) |\n| we / you / they are (we're) | Are we? | we are not (aren't) |\n\n### Схема\n- **(+)** кто + am / is / are: *She is tired.*\n- **(?)** Am / Is / Are + кто: *Are you busy?*\n- **(−)** кто + am / is / are + **not**: *He is not ill.*\n\n### to be + прилагательное\nlate, on time, at home, at work, tired, ill, well, busy, strong, angry, kind, hungry, rich, sad\n\n> I am late. — Я опоздал. (дословно: я есть опоздавший)\n> We are hungry. — Мы голодные.\n\n! **Прилагательное или наречие?** *good* — хороший (какой?), *well* — хорошо (как?). *bad* — плохой, *badly* — плохо. Окончание **-ly** делает из прилагательного наречие. Но *I am well* — «я здоров».\n\n! **Вспомогательные глаголы (auxiliary verbs):** be (am, is, are, was, were, been), have (has, have, had), do (do, does, did). **to + глагол** — инфинитив (начальная форма): to be, to have."},
+        {"id": "g-wh", "title": "Специальные вопросы (Wh-questions)",
+         "body": "Вопросительное слово ставится **в начало** предложения.\n\n| Слово | Значение |\n| what | что? какой? |\n| where | где? куда? откуда? |\n| when | когда? |\n| why | почему? |\n| who | кто? |\n| whose | чей? |\n| how | как? |\n| what time | в какое время? |\n| how old | сколько лет? |\n| how much | сколько? (стоит) |\n\n### Порядок слов\n**Wh + am / is / are + кто**\n\n> What is your name? — Как тебя зовут?\n> Why are you sad? — Почему тебе грустно?\n> Where is my pen? — Где моя ручка?\n\n**Whose + существительное + is / are + this / that…**\n\n> Whose camera is this? — Чей это фотоаппарат?\n> Whose slippers are these? — Чьи это тапочки?\n\n! Предлог уходит **в конец**: **Where are you from?** — Откуда ты?\n\n! **Who** часто сам — подлежащее: *Who is at home?* — Кто дома?"},
+        {"id": "g-demo", "title": "This / these, that / those",
+         "body": "| | Рядом, здесь | Далеко, там |\n| Один | **this** — этот | **that** — тот |\n| Много | **these** — эти | **those** — те |\n\n> I have got a book in my hand. **This** book is blue. — Эта книга голубая.\n> I see a book on the shelf. **That** book is brown. — Та книга коричневая.\n\n> This is a flower. → These are flowers.\n> That is a pear. → Those are pears.\n> What is this? — This is a pie.\n> What are these? — These are pies.\n> What is that? — That is a car.\n> What are those? — Those are cars.\n\n! После **these / those** — глагол **are** и существительное во множественном числе: These **are** flower**s**."},
+        {"id": "g-poss", "title": "Притяжательные местоимения: my и mine",
+         "body": "Перед существительным — **my, your, his, her, its, our, their**.\n\nЕсли существительное не нужно повторять, используем **абсолютную форму**: **mine, yours, his, hers, ours, theirs**.\n\n| Перед существительным | Без существительного |\n| my book | mine — мой |\n| your book | yours — твой, ваш |\n| his book | his — его |\n| her book | hers — её |\n| its book | its — его, её |\n| our book | ours — наш |\n| their book | theirs — их |\n\n> This is my camera. = This is **mine**.\n> The white cat is **his**, not **hers**.\n> These keys are **yours**, not **mine**.\n> — Whose camera is this? — It is **mine**.\n> These are her earrings. = These are **hers**.\n\n! После абсолютной формы существительное **не ставится**: ~~mine book~~ → **my** book."}
+      ],
+      "words": [
         {"id": "w001", "en": "comb", "ru": "расчёска", "tr": "/kəʊm/", "topic": "pictures", "ex": "Whose comb is this? It is hers.", "exRu": "Чья это расчёска? Её."},
         {"id": "w002", "en": "sunglasses / glasses", "ru": "солнцезащитные очки", "tr": "/ˈsʌnɡlɑːsɪz/", "topic": "pictures", "ex": "These sunglasses are mine.", "exRu": "Эти солнцезащитные очки мои."},
         {"id": "w003", "en": "kettle", "ru": "чайник (для кипячения)", "tr": "/ˈketl/", "topic": "pictures", "ex": "That kettle is white.", "exRu": "Тот чайник белый."},
@@ -495,49 +604,96 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w047", "en": "those", "ru": "те", "tr": "/ðəʊz/", "topic": "demo", "ex": "Those are pears.", "exRu": "Это (вон те) груши."},
         {"id": "w048", "en": "flower", "ru": "цветок", "tr": "/ˈflaʊə/", "topic": "demo", "ex": "This is a flower.", "exRu": "Это цветок."},
         {"id": "w049", "en": "pear", "ru": "груша", "tr": "/peə/", "topic": "demo", "ex": "That is a pear.", "exRu": "Вон то — груша."},
-        {"id": "w050", "en": "pie", "ru": "пирог", "tr": "/paɪ/", "topic": "demo", "ex": "What are these? These are pies.", "exRu": "Что это? Это пироги."}
-      ]
-    },
-    {
-      "id": "lesson-01",
-      "title": "Teacher's questions",
-      "source": "Lesson recording, 8 Oct 2026",
-      "added": "2026-10-08",
-      "topics": {"clothes": "Clothes & colours", "money": "How much / many", "time": "Days, months, seasons", "family": "About you & family"},
-      "items": [
-        {"id": "q01", "en": "What colour is it?", "ru": "Какого это цвета?", "topic": "clothes"},
-        {"id": "q02", "en": "Have you got a suitcase?", "ru": "У тебя есть чемодан?", "topic": "clothes"},
-        {"id": "q03", "en": "Have you got black flip-flops?", "ru": "У тебя есть чёрные шлёпанцы?", "topic": "clothes"},
-        {"id": "q04", "en": "What colour is your mother's coat?", "ru": "Какого цвета пальто твоей мамы?", "topic": "clothes"},
-        {"id": "q05", "en": "What colour is your mum's dressing gown?", "ru": "Какого цвета мамин халат?", "topic": "clothes"},
-        {"id": "q06", "en": "Have you got a dressing gown?", "ru": "У тебя есть халат?", "topic": "clothes"},
-        {"id": "q07", "en": "Whose shoes are these?", "ru": "Чьи это туфли?", "topic": "clothes"},
-        {"id": "q08", "en": "What colour are your mother's shoes?", "ru": "Какого цвета туфли твоей мамы?", "topic": "clothes"},
-        {"id": "q09", "en": "Have you got a red belt?", "ru": "У тебя есть красный ремень?", "topic": "clothes"},
-        {"id": "q10", "en": "Has your mother got a red coat?", "ru": "У твоей мамы есть красное пальто?", "topic": "clothes"},
-        {"id": "q11", "en": "Have you got a belt?", "ru": "У тебя есть ремень?", "topic": "clothes"},
-        {"id": "q12", "en": "Has your father got a black belt?", "ru": "У твоего папы есть чёрный ремень?", "topic": "clothes"},
-        {"id": "q13", "en": "How much is it?", "ru": "Сколько это стоит?", "topic": "money"},
-        {"id": "q14", "en": "How much is this?", "ru": "Сколько стоит это?", "topic": "money"},
-        {"id": "q15", "en": "How much are those?", "ru": "Сколько стоят те?", "topic": "money"},
-        {"id": "q16", "en": "How many cars has your uncle got?", "ru": "Сколько машин у твоего дяди?", "topic": "money"},
-        {"id": "q17", "en": "How many houses has your uncle got?", "ru": "Сколько домов у твоего дяди?", "topic": "money"},
-        {"id": "q18", "en": "What is the first month of the year?", "ru": "Какой первый месяц года?", "topic": "time"},
-        {"id": "q19", "en": "What is the last month of the year?", "ru": "Какой последний месяц года?", "topic": "time"},
-        {"id": "q20", "en": "What is your favourite season?", "ru": "Какое твоё любимое время года?", "topic": "time"},
-        {"id": "q21", "en": "What is your mother's favourite season?", "ru": "Какое любимое время года у твоей мамы?", "topic": "time"},
-        {"id": "q22", "en": "What day is it today?", "ru": "Какой сегодня день?", "topic": "time"},
-        {"id": "q23", "en": "What day is it tomorrow?", "ru": "Какой день завтра?", "topic": "time"},
-        {"id": "q24", "en": "What is the first day of the week?", "ru": "Какой первый день недели?", "topic": "time"},
-        {"id": "q25", "en": "What is the second day of the week?", "ru": "Какой второй день недели?", "topic": "time"},
-        {"id": "q26", "en": "What is the fifth day of the week?", "ru": "Какой пятый день недели?", "topic": "time"},
-        {"id": "q27", "en": "Have you got holidays?", "ru": "У тебя есть каникулы?", "topic": "family"},
-        {"id": "q28", "en": "When are your brother's holidays?", "ru": "Когда у твоего брата каникулы?", "topic": "family"},
-        {"id": "q29", "en": "What is your name?", "ru": "Как тебя зовут?", "topic": "family"},
-        {"id": "q30", "en": "What are your parents' names?", "ru": "Как зовут твоих родителей?", "topic": "family"},
-        {"id": "q31", "en": "What is your job?", "ru": "Кем ты работаешь?", "topic": "family"},
-        {"id": "q32", "en": "What is your father's job?", "ru": "Кем работает твой папа?", "topic": "family"},
-        {"id": "q33", "en": "What are your mother's hobbies?", "ru": "Какие хобби у твоей мамы?", "topic": "family"}
+        {"id": "w050", "en": "pie", "ru": "пирог", "tr": "/paɪ/", "topic": "demo", "ex": "What are these? These are pies.", "exRu": "Что это? Это пироги."},
+        {"id": "w051", "en": "black", "ru": "чёрный", "tr": "/blæk/", "topic": "colours", "ex": "My cat is black.", "exRu": "Моя кошка чёрная."},
+        {"id": "w052", "en": "white", "ru": "белый", "tr": "/waɪt/", "topic": "colours", "ex": "The house is white.", "exRu": "Дом белый."},
+        {"id": "w053", "en": "yellow", "ru": "жёлтый", "tr": "/ˈjeləʊ/", "topic": "colours", "ex": "The banana is yellow.", "exRu": "Банан жёлтый."},
+        {"id": "w054", "en": "blue", "ru": "синий, голубой", "tr": "/bluː/", "topic": "colours", "ex": "The sea is blue.", "exRu": "Море синее."},
+        {"id": "w055", "en": "grey", "ru": "серый", "tr": "/ɡreɪ/", "topic": "colours", "ex": "The mouse is grey.", "exRu": "Мышь серая."},
+        {"id": "w056", "en": "pink", "ru": "розовый", "tr": "/pɪŋk/", "topic": "colours", "ex": "Her dress is pink.", "exRu": "Её платье розовое."},
+        {"id": "w057", "en": "red", "ru": "красный, рыжий", "tr": "/red/", "topic": "colours", "ex": "The tomato is red.", "exRu": "Помидор красный."},
+        {"id": "w058", "en": "orange", "ru": "оранжевый", "tr": "/ˈɒrɪndʒ/", "topic": "colours", "ex": "The carrot is orange.", "exRu": "Морковь оранжевая."},
+        {"id": "w059", "en": "green", "ru": "зелёный", "tr": "/ɡriːn/", "topic": "colours", "ex": "The tree is green.", "exRu": "Дерево зелёное."},
+        {"id": "w060", "en": "brown", "ru": "коричневый", "tr": "/braʊn/", "topic": "colours", "ex": "That book is brown.", "exRu": "Та книга коричневая."},
+        {"id": "w061", "en": "purple", "ru": "пурпурный", "tr": "/ˈpɜːpl/", "topic": "colours", "ex": "Is your coat purple?", "exRu": "Твоё пальто пурпурное?"},
+        {"id": "w062", "en": "violet", "ru": "фиолетовый", "tr": "/ˈvaɪələt/", "topic": "colours", "ex": "This flower is violet.", "exRu": "Этот цветок фиолетовый."},
+        {"id": "w063", "en": "light green", "ru": "светло-зелёный", "tr": "/laɪt ɡriːn/", "topic": "colours", "ex": "The melon is light green.", "exRu": "Дыня светло-зелёная."},
+        {"id": "w064", "en": "dark green", "ru": "тёмно-зелёный", "tr": "/dɑːk ɡriːn/", "topic": "colours", "ex": "My father's car is dark green.", "exRu": "Машина моего папы тёмно-зелёная."},
+        {"id": "w065", "en": "black and white", "ru": "чёрно-белый", "tr": "/blæk ən waɪt/", "topic": "colours", "ex": "The dog is black and white.", "exRu": "Собака чёрно-белая."},
+        {"id": "w066", "en": "silver", "ru": "серебряный", "tr": "/ˈsɪlvə/", "topic": "colours", "ex": "My watch is silver.", "exRu": "Мои часы серебряные."},
+        {"id": "w067", "en": "gold (colour)", "ru": "золотой", "tr": "/ɡəʊld/", "topic": "colours", "ex": "Her ring is gold.", "exRu": "Её кольцо золотое."},
+        {"id": "w068", "en": "beige", "ru": "бежевый", "tr": "/beɪʒ/", "topic": "colours", "ex": "My coat is beige.", "exRu": "Моё пальто бежевое."},
+        {"id": "w069", "en": "What is your favourite colour?", "ru": "Какой твой любимый цвет?", "topic": "colours"},
+        {"id": "w070", "en": "zero / oh", "ru": "ноль", "tr": "/ˈzɪərəʊ/, /əʊ/", "topic": "numbers"},
+        {"id": "w071", "en": "five", "ru": "пять", "tr": "/faɪv/", "topic": "numbers", "ex": "I have got five pens.", "exRu": "У меня есть пять ручек."},
+        {"id": "w072", "en": "seven", "ru": "семь", "tr": "/ˈsevn/", "topic": "numbers", "ex": "Seven people are at home.", "exRu": "Дома семь человек."},
+        {"id": "w073", "en": "eight", "ru": "восемь", "tr": "/eɪt/", "topic": "numbers", "ex": "The cat has got eight kittens.", "exRu": "У кошки восемь котят."},
+        {"id": "w074", "en": "What is your phone number?", "ru": "Какой у тебя номер телефона?", "topic": "numbers"},
+        {"id": "w075", "en": "piglet", "ru": "поросёнок", "tr": "/ˈpɪɡlət/", "topic": "young", "ex": "The piglet is pink.", "exRu": "Поросёнок розовый."},
+        {"id": "w076", "en": "cow", "ru": "корова", "tr": "/kaʊ/", "topic": "young", "ex": "The cow is black and white.", "exRu": "Корова чёрно-белая."},
+        {"id": "w077", "en": "calf", "ru": "телёнок", "tr": "/kɑːf/", "topic": "young", "ex": "The calf is brown.", "exRu": "Телёнок коричневый."},
+        {"id": "w078", "en": "horse", "ru": "лошадь", "tr": "/hɔːs/", "topic": "young", "ex": "Whose horse is that?", "exRu": "Чья та лошадь?"},
+        {"id": "w079", "en": "foal", "ru": "жеребёнок", "tr": "/fəʊl/", "topic": "young", "ex": "The foal is hungry.", "exRu": "Жеребёнок голодный."},
+        {"id": "w080", "en": "duckling", "ru": "утёнок", "tr": "/ˈdʌklɪŋ/", "topic": "young", "ex": "The duckling is yellow.", "exRu": "Утёнок жёлтый."},
+        {"id": "w081", "en": "hen", "ru": "курица", "tr": "/hen/", "topic": "young", "ex": "The hen is white.", "exRu": "Курица белая."},
+        {"id": "w082", "en": "chick", "ru": "цыплёнок", "tr": "/tʃɪk/", "topic": "young", "ex": "The chick is yellow.", "exRu": "Цыплёнок жёлтый."},
+        {"id": "w083", "en": "kitten", "ru": "котёнок", "tr": "/ˈkɪtn/", "topic": "young", "ex": "This kitten is grey.", "exRu": "Этот котёнок серый."},
+        {"id": "w084", "en": "puppy", "ru": "щенок", "tr": "/ˈpʌpi/", "topic": "young", "ex": "Whose puppy is this?", "exRu": "Чей это щенок?"},
+        {"id": "w085", "en": "lamb", "ru": "ягнёнок", "tr": "/læm/", "topic": "young", "ex": "The lamb is white.", "exRu": "Ягнёнок белый."},
+        {"id": "w086", "en": "goat", "ru": "коза", "tr": "/ɡəʊt/", "topic": "young", "ex": "The goat is grey.", "exRu": "Коза серая."},
+        {"id": "w087", "en": "kid", "ru": "козлёнок", "tr": "/kɪd/", "topic": "young", "ex": "The kid is with the goat.", "exRu": "Козлёнок с козой."},
+        {"id": "w088", "en": "nestling", "ru": "птенец", "tr": "/ˈnestlɪŋ/", "topic": "young", "ex": "The nestling is in the tree.", "exRu": "Птенец на дереве."},
+        {"id": "w089", "en": "mine", "ru": "мой (без сущ.)", "tr": "/maɪn/", "topic": "poss", "ex": "This book is mine.", "exRu": "Эта книга моя."},
+        {"id": "w090", "en": "yours", "ru": "твой, ваш (без сущ.)", "tr": "/jɔːz/", "topic": "poss", "ex": "Is this pen yours?", "exRu": "Эта ручка твоя?"},
+        {"id": "w091", "en": "hers", "ru": "её (без сущ.)", "tr": "/hɜːz/", "topic": "poss", "ex": "That umbrella is hers.", "exRu": "Тот зонт её."},
+        {"id": "w092", "en": "ours", "ru": "наш (без сущ.)", "tr": "/ˈaʊəz/", "topic": "poss", "ex": "This house is ours.", "exRu": "Этот дом наш."},
+        {"id": "w093", "en": "theirs", "ru": "их (без сущ.)", "tr": "/ðeəz/", "topic": "poss", "ex": "Those dogs are theirs.", "exRu": "Те собаки их."},
+        {"id": "w094", "en": "name", "ru": "имя", "tr": "/neɪm/", "topic": "wh", "ex": "What is your name?", "exRu": "Как тебя зовут?"}
+      ],
+      "tasks": [
+        {"id": "t01", "ru": "Я дома.", "en": ["I am at home.", "I'm at home."], "grammar": "g-tobe"},
+        {"id": "t02", "ru": "Мой папа на работе.", "en": ["My father is at work.", "My dad is at work."], "grammar": "g-tobe"},
+        {"id": "t03", "ru": "Ты устал?", "en": ["Are you tired?"], "grammar": "g-tobe"},
+        {"id": "t04", "ru": "Мы не голодные.", "en": ["We are not hungry.", "We aren't hungry.", "We're not hungry."], "grammar": "g-tobe"},
+        {"id": "t05", "ru": "Она не больна.", "en": ["She is not ill.", "She isn't ill.", "She's not ill."], "grammar": "g-tobe"},
+        {"id": "t06", "ru": "Они дома?", "en": ["Are they at home?"], "grammar": "g-tobe"},
+        {"id": "t07", "ru": "Я не опоздал, я вовремя.", "en": ["I am not late, I am on time.", "I'm not late, I'm on time."], "grammar": "g-tobe"},
+        {"id": "t08", "ru": "Мой брат сильный и добрый.", "en": ["My brother is strong and kind."], "grammar": "g-tobe"},
+        {"id": "t09", "ru": "Он занят?", "en": ["Is he busy?"], "grammar": "g-tobe"},
+        {"id": "t10", "ru": "Моя мама не злая.", "en": ["My mother is not angry.", "My mother isn't angry.", "My mum is not angry.", "My mum isn't angry."], "grammar": "g-tobe"},
+        {"id": "t11", "ru": "Этот мужчина богатый.", "en": ["This man is rich."], "grammar": "g-tobe"},
+        {"id": "t12", "ru": "Кошка голодная.", "en": ["The cat is hungry."], "grammar": "g-tobe"},
+        {"id": "t13", "ru": "Я здоров.", "en": ["I am well.", "I'm well."], "grammar": "g-tobe"},
+        {"id": "t14", "ru": "Банан жёлтый, а помидор красный.", "en": ["The banana is yellow and the tomato is red.", "The banana is yellow, and the tomato is red."], "grammar": "g-tobe"},
+        {"id": "t15", "ru": "Где моя ручка?", "en": ["Where is my pen?"], "grammar": "g-wh"},
+        {"id": "t16", "ru": "Откуда ты?", "en": ["Where are you from?"], "grammar": "g-wh"},
+        {"id": "t17", "ru": "Кто дома?", "en": ["Who is at home?"], "grammar": "g-wh"},
+        {"id": "t18", "ru": "Сколько тебе лет?", "en": ["How old are you?"], "grammar": "g-wh"},
+        {"id": "t19", "ru": "Почему ты злишься?", "en": ["Why are you angry?"], "grammar": "g-wh"},
+        {"id": "t20", "ru": "Когда ты дома?", "en": ["When are you at home?"], "grammar": "g-wh"},
+        {"id": "t21", "ru": "Какого цвета твоя кошка?", "en": ["What colour is your cat?"], "grammar": "g-wh"},
+        {"id": "t22", "ru": "Почему ты грустный?", "en": ["Why are you sad?"], "grammar": "g-wh"},
+        {"id": "t23", "ru": "Сколько стоит дыня?", "en": ["How much is the melon?", "How much is a melon?"], "grammar": "g-wh"},
+        {"id": "t24", "ru": "Как тебя зовут?", "en": ["What is your name?"], "grammar": "g-wh"},
+        {"id": "t25", "ru": "Это цветок.", "en": ["This is a flower."], "grammar": "g-demo"},
+        {"id": "t26", "ru": "Это груши. (рядом)", "en": ["These are pears."], "grammar": "g-demo"},
+        {"id": "t27", "ru": "Вон то — машина.", "en": ["That is a car."], "grammar": "g-demo"},
+        {"id": "t28", "ru": "Те машины белые.", "en": ["Those cars are white."], "grammar": "g-demo"},
+        {"id": "t29", "ru": "Эта книга синяя.", "en": ["This book is blue."], "grammar": "g-demo"},
+        {"id": "t30", "ru": "Что это? (рядом, много)", "en": ["What are these?"], "grammar": "g-demo"},
+        {"id": "t31", "ru": "Что это? (далеко, одно)", "en": ["What is that?"], "grammar": "g-demo"},
+        {"id": "t32", "ru": "Эти щенки чёрные.", "en": ["These puppies are black."], "grammar": "g-demo"},
+        {"id": "t33", "ru": "Чья это кошка?", "en": ["Whose cat is this?"], "grammar": "g-poss"},
+        {"id": "t34", "ru": "Чьи это тапочки?", "en": ["Whose slippers are these?"], "grammar": "g-poss"},
+        {"id": "t35", "ru": "Эта ручка моя.", "en": ["This pen is mine."], "grammar": "g-poss"},
+        {"id": "t36", "ru": "Тот зонт её.", "en": ["That umbrella is hers."], "grammar": "g-poss"},
+        {"id": "t37", "ru": "Эти кубики наши.", "en": ["These blocks are ours."], "grammar": "g-poss"},
+        {"id": "t38", "ru": "Это не мой чайник.", "en": ["This is not my kettle.", "This isn't my kettle.", "It is not my kettle.", "It isn't my kettle."], "grammar": "g-poss"},
+        {"id": "t39", "ru": "Тот фотоаппарат их.", "en": ["That camera is theirs."], "grammar": "g-poss"},
+        {"id": "t40", "ru": "Белая кошка его, а не её.", "en": ["The white cat is his, not hers."], "grammar": "g-poss"},
+        {"id": "t41", "ru": "Эти тапочки твои?", "en": ["Are these slippers yours?"], "grammar": "g-poss"},
+        {"id": "t42", "ru": "Этот плюшевый мишка твой или мой?", "en": ["Is this teddy bear yours or mine?"], "grammar": "g-poss"},
+        {"id": "t43", "ru": "Чья та лошадь? — Их.", "en": ["Whose horse is that? It is theirs.", "Whose horse is that? Theirs."], "grammar": "g-poss"}
       ]
     }
   ]
@@ -545,91 +701,94 @@ textarea#answer:focus { border-color: var(--accent); }
 </script>
 
 <script>
-/* One-page quiz. Words live in the WORDS JSON block (id="words") above this script.
-   Progress: localStorage (always) + Telegram CloudStorage (when opened as a Mini App). */
+/* One-page English course: topics → Grammar (rules), Vocabulary (flashcards by theme), Tasks (RU → EN translation).
+   Progress: localStorage (always) + Telegram CloudStorage (when opened as a Mini App).
+   Keys: ew_p_<topicId> = words, ew_t_<topicId> = tasks; value = { itemId: [box, timesSeen, lastDay] }. */
 const MAX_BOX = 3;              // 0 new/wrong · 1 learning · 2 almost · 3 learned
 const LEARNED_FROM = 3;
 const BOX_COLORS = ["var(--rule)", "var(--pen)", "var(--warn)", "var(--accent)", "var(--good)"];
 const BOX_NAMES = ["New", "Wrong", "Learning", "Almost", "Learned"];
-const NEW_DAYS = 7;
-const ALL = "__all";
 
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
 const $ = id => document.getElementById(id);
 
-let SETS = [];                 // [{id,title,added,topics,items:[{key,id,en,ru,topic,tr,ex,setId}]}]
-let state = { set: null, topic: "all", mode: "write" };
-let progress = {};             // setId -> { itemId: [box, seen, lastSeenDay] }
-let current = null, lastKey = null, answered = false, choiceOptions = [];
+let TOPICS = [];
+let state = { topic: null, tab: "grammar", theme: "all", gfilter: "all", mode: "learn" };
+let progress = {};              // storage key -> { itemId: [box, seen, day] }
+let current = null, lastKey = null, answered = false, screen = "menu", pendingScroll = null;
 
 /* ---------- storage ---------- */
-const LS_PREFIX = "ew_p_";     // one key per set keeps each value small (CloudStorage limit 4096 chars)
-const LS_STATE = "ew_state";
+const LS_STATE = "ew_state2";
+const CHUNK = 4000;             // Telegram CloudStorage: 4096 chars per value → long values are split into parts
 const cloudOK = inTelegram && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9");
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 const parse = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 
-function loadProgress(setIds) {
-  setIds.forEach(id => { progress[id] = parse(lsGet(LS_PREFIX + id)) || {}; });
-  // carry over progress from the first version of this page (key tq_progress_v1, numeric ids 0-32)
-  const old = parse(lsGet("tq_progress_v1"));
-  if (old && progress["lesson-01"] && !Object.keys(progress["lesson-01"]).length) {
-    for (const k in old) progress["lesson-01"]["q" + String(+k + 1).padStart(2, "0")] = [old[k].b || 0, old[k].s || 0, 0];
-    saveProgress("lesson-01");
-  }
-  if (!cloudOK) return Promise.resolve();
+function cloudGetAll(keys) {
   return new Promise(res => {
     try {
-      tg.CloudStorage.getItems(setIds.map(id => LS_PREFIX + id), (err, vals) => {
-        if (!err && vals) setIds.forEach(id => {
-          const cloud = parse(vals[LS_PREFIX + id]);
-          if (cloud) progress[id] = merge(progress[id], cloud);
+      tg.CloudStorage.getItems(keys, (err, vals) => {
+        if (err || !vals) return res({});
+        const out = {}, parts = [];
+        keys.forEach(k => {
+          const v = vals[k];
+          if (v && v.startsWith("#chunks:")) for (let i = 1; i <= +v.slice(8); i++) parts.push(k + "_c" + i);
+          else if (v) out[k] = v;
         });
-        res();
+        if (!parts.length) return res(out);
+        tg.CloudStorage.getItems(parts, (e2, v2) => {
+          keys.forEach(k => {
+            const v = vals[k];
+            if (v && v.startsWith("#chunks:")) { let s = ""; for (let i = 1; i <= +v.slice(8); i++) s += (v2 && v2[k + "_c" + i]) || ""; out[k] = s; }
+          });
+          res(out);
+        });
       });
-    } catch { res(); }
+    } catch { res({}); }
   });
 }
-// keep whichever record was seen more often (simple and good enough for one learner, several devices)
+function cloudSet(k, s) {
+  try {
+    if (s.length <= CHUNK) { tg.CloudStorage.setItem(k, s); return; }
+    const n = Math.ceil(s.length / CHUNK);
+    for (let i = 1; i <= n; i++) tg.CloudStorage.setItem(k + "_c" + i, s.slice((i - 1) * CHUNK, i * CHUNK));
+    tg.CloudStorage.setItem(k, "#chunks:" + n);
+  } catch {}
+}
+async function loadProgress(keys) {
+  keys.forEach(k => { progress[k] = parse(lsGet(k)) || {}; });
+  if (!cloudOK) return;
+  const vals = await cloudGetAll(keys);
+  keys.forEach(k => { const c = parse(vals[k]); if (c) progress[k] = merge(progress[k], c); });
+}
+// keep whichever record was seen more often (one learner, several devices)
 function merge(a, b) {
   const out = { ...a };
   for (const k in b) if (!out[k] || (b[k][1] || 0) > (out[k][1] || 0)) out[k] = b[k];
   return out;
 }
-function saveProgress(setId) {
-  const s = JSON.stringify(progress[setId] || {});
-  lsSet(LS_PREFIX + setId, s);
-  if (cloudOK) { try { tg.CloudStorage.setItem(LS_PREFIX + setId, s); } catch {} }
+function saveProgress(key) {
+  const s = JSON.stringify(progress[key] || {});
+  lsSet(key, s);
+  if (cloudOK) cloudSet(key, s);
 }
-function saveUiState() {
+function saveUiState(extra = {}) {
   const old = parse(lsGet(LS_STATE)) || {};
-  lsSet(LS_STATE, JSON.stringify({ ...old, set: state.set, topic: state.topic, mode: state.mode }));
+  lsSet(LS_STATE, JSON.stringify({ ...old, ...state, ...extra }));
 }
 
-/* ---------- data: the WORDS block above this script ---------- */
-const wordCount = t => t.split(/\s*\/\s*/)[0].replace(/[^\p{L}\p{N}' ]/gu, " ").trim().split(/\s+/).filter(Boolean).length;
+/* ---------- data ---------- */
 function loadData() {
-  const raw = JSON.parse(document.getElementById("words").textContent);
-  const sets = raw.sets.map(s => {
-    const items = (s.items || []).map(it => ({ ...it, setId: s.id, key: s.id + "/" + it.id }));
-    // sentence pool: the set's "sentences" + word examples that have a translation (ex + exRu)
-    // + items that already are phrases/sentences (3+ words)
-    const sentences = [
-      ...(s.sentences || []).map(x => ({ ...x, setId: s.id, key: s.id + "/" + x.id })),
-      ...items.filter(it => it.ex && it.exRu).map(it => ({ id: "ex-" + it.id, en: it.ex, ru: it.exRu, topic: it.topic, word: it.en, setId: s.id, key: s.id + "/ex-" + it.id })),
-      ...items.filter(it => wordCount(it.en) >= 3)
-    ];
-    return { id: s.id, title: s.title, added: s.added, order: s.order, topics: s.topics || null, items, sentences };
-  });
-  // book topics ("order": 1, 2, 3…) in book order first; other sets after them, newest first
-  return sets.sort((a, b) => {
-    const ao = a.order != null, bo = b.order != null;
-    if (ao && bo) return a.order - b.order;
-    if (ao !== bo) return ao ? -1 : 1;
-    return (b.added || "").localeCompare(a.added || "");
-  });
+  const raw = JSON.parse($("words").textContent);
+  return raw.topics.slice().sort((a, b) => a.order - b.order).map(t => ({
+    ...t,
+    themes: t.themes || {},
+    grammar: t.grammar || [],
+    words: (t.words || []).map(w => ({ ...w, kind: "word", topicId: t.id, store: "ew_p_" + t.id, key: t.id + "/" + w.id })),
+    tasks: (t.tasks || []).map(k => ({ ...k, kind: "task", topicId: t.id, store: "ew_t_" + t.id, key: t.id + "/t/" + k.id }))
+  }));
 }
 
 /* ---------- Telegram ---------- */
@@ -647,7 +806,7 @@ function setupTelegram() {
   const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
   if (u && u.first_name) $("hello").textContent = `Hi, ${u.first_name}! Let's practise.`;
   tg.MainButton.onClick(onMain);
-  tg.BackButton.onClick(() => goMenu());
+  tg.BackButton.onClick(() => goBack());
 }
 function haptic(kind) {
   if (!inTelegram || !tg.HapticFeedback) return;
@@ -657,44 +816,89 @@ function setMainText(t) { $("mainBtn").textContent = t; if (inTelegram) tg.MainB
 
 /* ---------- helpers ---------- */
 const today = () => Math.floor(Date.now() / 864e5);
-const rec = it => (progress[it.setId] || {})[it.id];
+const rec = it => (progress[it.store] || {})[it.id];
 const boxOf = it => (rec(it) ? rec(it)[0] : 0);
 const bucketOf = it => { const r = rec(it); return !r ? 0 : r[0] === 0 ? 1 : r[0] + 1; };
-const isSentenceMode = () => state.mode === "sentences";
-const listOf = (s, mode = state.mode) => (mode === "sentences" ? s.sentences : s.items);
-const allItems = (mode = state.mode) => SETS.flatMap(s => listOf(s, mode));
-const currentSet = () => SETS.find(s => s.id === state.set);
-function setItems(mode = state.mode) { return state.set === ALL ? allItems(mode) : (currentSet() ? listOf(currentSet(), mode) : []); }
-function pool(mode = state.mode) { return setItems(mode).filter(it => state.topic === "all" || it.topic === state.topic); }
-function isNew(s) { return s.added && (Date.now() - Date.parse(s.added)) / 864e5 < NEW_DAYS; }
+const learnedIn = list => list.filter(it => boxOf(it) >= LEARNED_FROM).length;
+const curTopic = () => TOPICS.find(t => t.id === state.topic);
+const shortTitle = t => t ? t.title.replace(/^Topic \d+ · /, "") : "";
+const themeName = (t, k) => k === "all" ? "All words" : (t.themes[k] || "Other");
+const grammarTitle = (t, id) => id === "all" ? "All sentences" : ((t.grammar.find(g => g.id === id) || {}).title || "");
+function wordPool() { const t = curTopic(); return t ? t.words.filter(w => state.theme === "all" || (w.topic || "_other") === state.theme) : []; }
+function taskPool() { const t = curTopic(); return t ? t.tasks.filter(k => state.gfilter === "all" || k.grammar === state.gfilter) : []; }
+const pool = () => (state.mode === "learn" ? wordPool() : taskPool());
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
 function pickNext() {
   const p = pool();
-  if (state.mode === "learn") {
+  if (state.mode === "learn") {             // new words first, in book order
     const unseen = p.find(it => !rec(it));
     if (unseen) return unseen;
   }
   const list = p.length > 1 ? p.filter(it => it.key !== lastKey) : p;
-  const weights = list.map(it => Math.pow(2, MAX_BOX - boxOf(it)) * (rec(it) ? 1 : 1.5)); // unseen words a bit more often
+  const weights = list.map(it => Math.pow(2, MAX_BOX - boxOf(it)) * (rec(it) ? 1 : 1.5));
   let r = Math.random() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < list.length; i++) { r -= weights[i]; if (r <= 0) return list[i]; }
   return list[list.length - 1];
+}
+
+/* ---------- grammar markup: "### sub", "| table |", "> example", "- list", "! tip", **bold**, *italic*, ~~wrong~~ ---------- */
+function inline(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/~~(.+?)~~/g, "<s>$1</s>").replace(/\*(.+?)\*/g, "<i>$1</i>");
+}
+function example(line) {
+  const i = line.indexOf(" — ", 1);
+  if (i > 0 && /[а-яё]/i.test(line.slice(i))) return `<p><span class="en">${inline(line.slice(0, i))}</span> <span class="ru">${inline(line.slice(i + 1))}</span></p>`;
+  return `<p>${inline(line)}</p>`;
+}
+function markup(src) {
+  const lines = src.split("\n"); let html = "", i = 0;
+  const special = /^(### |\||> |- |! )/;
+  while (i < lines.length) {
+    const l = lines[i];
+    if (!l.trim()) { i++; continue; }
+    if (l.startsWith("### ")) { html += `<h3>${inline(l.slice(4))}</h3>`; i++; continue; }
+    if (l.startsWith("|")) {
+      const rows = [];
+      while (i < lines.length && lines[i].startsWith("|")) { rows.push(lines[i].trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())); i++; }
+      html += `<div class="tblwrap"><table><thead><tr>${rows[0].map(c => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>` +
+        rows.slice(1).map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("") + `</tbody></table></div>`;
+      continue;
+    }
+    if (l.startsWith("> ")) {
+      const ex = [];
+      while (i < lines.length && lines[i].startsWith("> ")) { ex.push(lines[i].slice(2)); i++; }
+      html += `<div class="examples">${ex.map(example).join("")}</div>`;
+      continue;
+    }
+    if (l.startsWith("- ")) {
+      const li = [];
+      while (i < lines.length && lines[i].startsWith("- ")) { li.push(lines[i].slice(2)); i++; }
+      html += `<ul>${li.map(x => `<li>${inline(x)}</li>`).join("")}</ul>`;
+      continue;
+    }
+    if (l.startsWith("! ")) { html += `<p class="tip">${inline(l.slice(2))}</p>`; i++; continue; }
+    const para = [];
+    while (i < lines.length && lines[i].trim() && !special.test(lines[i])) { para.push(lines[i]); i++; }
+    html += `<p>${inline(para.join(" "))}</p>`;
+  }
+  return html;
 }
 
 /* ---------- answer checking ---------- */
 function norm(s) {
   return s.toLowerCase()
     .replace(/[’‘`´]/g, "'")
-    .replace(/\([^)]*\)/g, " ")                 // "(to) run" → "run"
-    .replace(/[.,!?…;:"«»]/g, " ")
-    .replace(/\bcolor\b/g, "colour").replace(/\bfavorite\b/g, "favourite")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/[.,!?…;:"«»—–-]/g, " ")
+    .replace(/\bcolor\b/g, "colour").replace(/\bfavorite\b/g, "favourite").replace(/\bgray\b/g, "grey")
     .replace(/\bmom'?s\b/g, "mum's").replace(/\bmom\b/g, "mum")
-    .replace(/\b(what|who|it|that|there|he|she|where|how)'s\b/g, "$1 is")
+    .replace(/\b(what|who|it|that|there|he|she|where|how|this)'s\b/g, "$1 is")
     .replace(/\bcan't\b/g, "can not").replace(/\bcannot\b/g, "can not").replace(/\bwon't\b/g, "will not")
     .replace(/\b(\w+)n't\b/g, "$1 not")
     .replace(/\bi'm\b/g, "i am").replace(/\b(\w+)'re\b/g, "$1 are").replace(/\b(\w+)'ve\b/g, "$1 have").replace(/\b(\w+)'ll\b/g, "$1 will")
-    .replace(/^to /, "")                         // verbs: "to go" = "go"
     .replace(/\s+/g, " ").trim();
 }
 function lev(a, b) {
@@ -703,11 +907,10 @@ function lev(a, b) {
   for (let i = 1; i <= a.length; i++)
   for (let j = 1; j <= b.length; j++) {
     d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
-    if (i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1); // swapped letters = 1 typo
+    if (i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);
   }
   return d[a.length][b.length];
 }
-// word-level LCS: which words of a and b line up
 function lcsAlign(a, b) {
   const n = a.length, m = b.length, d = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
@@ -719,14 +922,13 @@ function lcsAlign(a, b) {
   }
   return { len: d[0][0], inA, inB };
 }
-function gradeSentence(input, en) {
+// right = matches one accepted answer; almost = same words with small spelling typos; wrong = different words
+function gradeSentence(input, targets) {
   const a = norm(input);
   if (!a) return "empty";
-  const targets = en.split(/\s*\/\s*/).map(norm);
-  if (targets.includes(a)) return "right";
-  // "almost" = same words, only spelling typos (each typo word ≥4 letters, 1 letter off; ≥7 letters, 2 off).
-  // A different or missing word (bus/train, has/have, a) is a real mistake → "wrong", with the word diff shown.
-  const ok = targets.some(b => {
+  const ts = targets.map(norm);
+  if (ts.includes(a)) return "right";
+  const ok = ts.some(b => {
     const ta = a.split(" "), tb = b.split(" ");
     if (ta.length !== tb.length) return false;
     let typos = 0;
@@ -740,240 +942,256 @@ function gradeSentence(input, en) {
   });
   return ok ? "almost" : "wrong";
 }
-// en may hold alternatives: "flip-flops / slippers"
-function grade(input, en) {
-  const a = norm(input);
-  if (!a) return "empty";
-  const targets = en.split(/\s*\/\s*/).map(norm);
-  if (targets.includes(a)) return "right";
-  if (targets.some(b => b.length > 5 && lev(a, b) <= (b.length > 12 ? 2 : 1))) return "almost";
-  return "wrong";
+const wkey = w => norm(w).replace(/ /g, "");
+function closest(input, targets) {
+  const a = input.trim().split(/\s+/).map(wkey);
+  let best = targets[0], bestScore = -1;
+  targets.forEach(t => { const b = t.split(/\s+/).map(wkey); const s = lcsAlign(a, b).len * 2 - b.length; if (s > bestScore) { bestScore = s; best = t; } });
+  return best;
+}
+function renderDiff(input, target) {
+  const rawA = input.trim().split(/\s+/), rawB = target.trim().split(/\s+/);
+  const { inA, inB } = lcsAlign(rawA.map(wkey), rawB.map(wkey));
+  const box = el("div", "diff");
+  const line = (label, words, flags, tag) => {
+    box.append(el("span", "lbl", label));
+    const row = el("span");
+    words.forEach((w, i) => row.append(el(flags[i] ? "span" : tag, null, w), document.createTextNode(" ")));
+    box.append(row);
+  };
+  line("Your answer", rawA, inA, "del");
+  line("Correct", rawB, inB, "mark");
+  return box;
 }
 
-/* ---------- main menu ---------- */
-const MODES = [
-  { id: "learn",     icon: "🃏", name: "Learn",        desc: "Flashcards: see the word, recall it, flip" },
-  { id: "write",     icon: "✍️", name: "Write",        desc: "See Russian, type the English" },
-  { id: "pickEn",    icon: "🇬🇧", name: "Pick English", desc: "Choose the English from 4 options" },
-  { id: "pickRu",    icon: "🇷🇺", name: "Pick Russian", desc: "Choose the Russian translation" },
-  { id: "sentences", icon: "💬", name: "Sentences",    desc: "Translate whole sentences into English" }
-];
-const modeName = id => (MODES.find(m => m.id === id) || MODES[1]).name;
-let screen = "menu";
-
-function setLabel(id) { return id === ALL ? "All sets" : (SETS.find(s => s.id === id) || {}).title || ""; }
-function topicName(id) { const s = currentSet(); return id !== "all" && s && s.topics ? s.topics[id] || "" : ""; }
-function learnedIn(list) { return list.filter(it => boxOf(it) >= LEARNED_FROM).length; }
-
-function renderSets() {
-  const box = $("sets"); box.innerHTML = "";
-  const rows = SETS.map(s => ({ id: s.id, title: s.title, items: s.items, isNew: isNew(s) }));
-  if (SETS.length > 1) rows.push({ id: ALL, title: "All sets (review)", items: allItems("write") });
-  rows.forEach(r => {
-    const b = document.createElement("button");
-    b.className = "setrow"; b.id = "set-" + r.id; b.setAttribute("role", "radio");
-    b.setAttribute("aria-checked", String(state.set === r.id));
-    const learned = learnedIn(r.items), total = r.items.length;
-    b.innerHTML = `<span class="dot"></span><span class="t"></span><span class="num">${learned}/${total}</span><span class="mini"><span style="width:${total ? learned / total * 100 : 0}%"></span></span>`;
-    b.querySelector(".t").textContent = r.title;
-    if (r.isNew) { const t = document.createElement("span"); t.className = "new"; t.textContent = "new"; b.querySelector(".t").append(t); }
-    b.addEventListener("click", () => { state.set = r.id; state.topic = "all"; lastKey = null; haptic("tap"); saveUiState(); renderMenu(); });
-    box.appendChild(b);
-  });
-}
-
-function renderTopics() {
-  const s = state.set === ALL ? null : currentSet();
-  const topics = s && s.topics;
-  $("topicSection").hidden = !topics;
-  $("modeLabel").textContent = (topics ? "3" : "2") + " · Choose how to practise";
-  if (!topics) return;
-  const box = $("topics"); box.innerHTML = "";
-  Object.entries({ all: "All topics", ...topics }).forEach(([k, name]) => {
-    const n = k === "all" ? s.items.length : s.items.filter(it => it.topic === k).length;
-    if (!n) return;
-    const b = document.createElement("button");
-    b.className = "chip"; b.id = "topic-" + k; b.setAttribute("role", "radio");
-    b.setAttribute("aria-pressed", String(state.topic === k)); b.setAttribute("aria-checked", String(state.topic === k));
-    b.append(name);
-    const c = document.createElement("span"); c.className = "n"; c.textContent = n; b.append(c);
-    b.addEventListener("click", () => { state.topic = k; lastKey = null; haptic("tap"); saveUiState(); renderMenu(); });
-    box.appendChild(b);
-  });
-}
-
-function renderModes() {
-  const box = $("modes"); box.innerHTML = "";
-  MODES.forEach(m => {
-    const list = pool(m.id);
-    const b = document.createElement("button");
-    b.className = "tile" + (m.id === state.mode ? " last" : ""); b.id = "mode-" + m.id;
-    b.disabled = !list.length;
-    const count = m.id === "learn"
-      ? (list.filter(it => !rec(it)).length ? `${list.filter(it => !rec(it)).length} new to learn` : `${list.length} to review`)
-      : m.id === "sentences" ? `${list.length} sentences` : `${learnedIn(list)}/${list.length} learned`;
-    b.innerHTML = `<span class="ic" aria-hidden="true">${m.icon}</span><span class="nm"></span><span class="ds"></span><span class="ct"></span>`;
-    b.querySelector(".nm").textContent = m.name;
-    b.querySelector(".ds").textContent = m.desc;
-    b.querySelector(".ct").textContent = list.length ? count : "Nothing here yet";
-    b.addEventListener("click", () => startPractice(m.id));
-    box.appendChild(b);
-  });
-}
-
-function renderMenu() {
-  renderSets(); renderTopics(); renderModes();
-  const words = allItems("write");
-  $("totalScore").textContent = `${learnedIn(words)} / ${words.length}`;
-  const saved = parse(lsGet(LS_STATE));
-  const cont = $("continueBtn");
-  cont.hidden = !(saved && saved.started);
-  if (!cont.hidden) $("continueWhat").textContent = [modeName(state.mode), setLabel(state.set), topicName(state.topic)].filter(Boolean).join(" · ");
-}
-
-function showScreen(name, push = true) {
+/* ---------- navigation: menu → topic → practice (browser / Telegram back goes one level up) ---------- */
+const PARENT = { practice: "topic", topic: "menu" };
+let depth = 0;
+function showScreen(name) {
+  if (screen === "practice" && name !== "practice") { try { speechSynthesis.cancel(); } catch {} }
   screen = name;
-  $("menu").hidden = name !== "menu";
-  $("practice").hidden = name !== "practice";
+  ["menu", "topic", "practice"].forEach(s => { $(s).hidden = s !== name; });
   if (inTelegram) {
-    if (name === "practice") { tg.BackButton.show(); tg.MainButton.show(); }
-    else { tg.BackButton.hide(); tg.MainButton.hide(); }
+    name === "menu" ? tg.BackButton.hide() : tg.BackButton.show();
+    name === "practice" ? tg.MainButton.show() : tg.MainButton.hide();
   }
-  if (name === "practice" && push) { try { history.pushState({ screen: "practice" }, ""); } catch {} }
+  if (name === "menu") renderMenu();
+  if (name === "topic") renderTopic();
   window.scrollTo(0, 0);
+  if (name === "topic" && pendingScroll) {
+    const target = $(pendingScroll); pendingScroll = null;
+    if (target) setTimeout(() => target.scrollIntoView({ block: "start" }), 30);
+  }
+}
+function go(name) {
+  showScreen(name);
+  try { history.pushState({ screen: name }, ""); depth++; } catch {}
+}
+function goBack() {
+  if (screen === "menu") return;
+  if (depth > 0) { history.back(); return; }
+  showScreen(PARENT[screen]);
+}
+window.addEventListener("popstate", e => {
+  depth = Math.max(0, depth - 1);
+  showScreen((e.state && e.state.screen) || "menu");
+});
+
+/* ---------- screen 1: topics ---------- */
+function renderMenu() {
+  const box = $("topicList"); box.innerHTML = "";
+  TOPICS.forEach(t => {
+    const b = el("button", "setrow topicrow"); b.id = "open-" + t.id;
+    const learned = learnedIn(t.words), total = t.words.length;
+    b.innerHTML = `<span class="ord">${t.order}</span><span class="t"></span><span class="num">${learned}/${total}</span><span class="mini"><span style="width:${total ? learned / total * 100 : 0}%"></span></span>`;
+    const tt = b.querySelector(".t");
+    tt.append(shortTitle(t));
+    tt.append(el("small", null, [t.pages && "pp. " + t.pages, total + " words", t.tasks.length + " sentences"].filter(Boolean).join(" · ")));
+    b.addEventListener("click", () => openTopic(t.id));
+    box.append(b);
+  });
+  const all = TOPICS.flatMap(t => t.words);
+  $("totalScore").textContent = `${learnedIn(all)} / ${all.length}`;
+  const saved = parse(lsGet(LS_STATE)) || {};
+  const t = TOPICS.find(x => x.id === saved.topic);
+  const cont = $("continueBtn");
+  cont.hidden = !(saved.started && t);
+  if (!cont.hidden) {
+    const what = saved.mode === "tasks" ? "Translate · " + grammarTitle(t, saved.gfilter || "all") : "Learn · " + themeName(t, saved.theme || "all");
+    $("continueWhat").textContent = `Topic ${t.order} · ${what}`;
+  }
+}
+function openTopic(id) {
+  if (state.topic !== id) { state.theme = "all"; state.gfilter = "all"; }
+  state.topic = id; haptic("tap"); saveUiState();
+  go("topic");
 }
 
+/* ---------- screen 2: a topic with three tabs ---------- */
+function renderTopic() {
+  const t = curTopic(); if (!t) return;
+  $("tTitle").textContent = shortTitle(t);
+  $("tSub").textContent = `Topic ${t.order}` + (t.pages ? " · Book, pp. " + t.pages : "");
+  $("tScore").textContent = `${learnedIn(t.words)} / ${t.words.length}`;
+  ["grammar", "vocab", "tasks"].forEach(k => {
+    const on = state.tab === k;
+    $("tab-" + k).setAttribute("aria-pressed", String(on)); $("tab-" + k).setAttribute("aria-selected", String(on));
+    $("panel-" + k).hidden = !on;
+  });
+  renderGrammar(t); renderVocab(t); renderTasks(t);
+}
+
+function renderGrammar(t) {
+  const box = $("panel-grammar"); box.innerHTML = "";
+  if (!t.grammar.length) { box.append(el("div", "notice", "No grammar in this topic yet.")); return; }
+  if (t.grammar.length > 1) {
+    const nav = el("div", "chips jump");
+    t.grammar.forEach(g => {
+      const c = el("button", "chip", g.title.split(":")[0].replace(/\s*\(.*\)$/, ""));
+      c.addEventListener("click", () => { const s = $("sec-" + g.id); if (s) s.scrollIntoView({ block: "start", behavior: "smooth" }); });
+      nav.append(c);
+    });
+    box.append(nav);
+  }
+  t.grammar.forEach(g => {
+    const sec = el("section", "card gram"); sec.id = "sec-" + g.id;
+    sec.append(el("h2", null, g.title));
+    const body = el("div"); body.style.display = "contents"; body.innerHTML = markup(g.body); sec.append(body);
+    const n = t.tasks.filter(k => k.grammar === g.id).length;
+    if (n) {
+      const p = el("button", "btn ghost practise", `✍️ Practise: ${n} sentences →`);
+      p.addEventListener("click", () => { state.gfilter = g.id; startPractice("tasks"); });
+      sec.append(p);
+    }
+    box.append(sec);
+  });
+}
+
+function renderVocab(t) {
+  const box = $("panel-vocab"); box.innerHTML = "";
+  if (!t.words.length) { box.append(el("div", "notice", "No words in this topic yet.")); return; }
+  const fresh = t.words.filter(w => !rec(w)).length;
+  const allBtn = el("button", "continue"); allBtn.id = "learnAll";
+  allBtn.innerHTML = `<span class="c-lbl">Learn all words</span><span class="c-what"></span><span class="c-go" aria-hidden="true">→</span>`;
+  allBtn.querySelector(".c-what").textContent = `${learnedIn(t.words)} of ${t.words.length} learned` + (fresh ? ` · ${fresh} new` : "");
+  allBtn.addEventListener("click", () => { state.theme = "all"; startPractice("learn"); });
+  box.append(allBtn);
+  box.append(el("p", "label", "Themes · tap to see the words"));
+  const groups = Object.entries(t.themes).map(([k, name]) => [k, name, t.words.filter(w => w.topic === k)]);
+  const other = t.words.filter(w => !w.topic || !t.themes[w.topic]);
+  if (other.length) groups.push(["_other", "Other", other]);
+  groups.forEach(([k, name, list]) => {
+    if (!list.length) return;
+    const d = el("details", "theme"); d.id = "theme-" + k;
+    const s = el("summary");
+    const learned = learnedIn(list);
+    s.innerHTML = `<span class="chev" aria-hidden="true">▶</span><span class="th-name"></span><span class="th-num">${learned}/${list.length}</span><span class="mini"><span style="width:${learned / list.length * 100}%"></span></span>`;
+    s.querySelector(".th-name").textContent = name;
+    const goBtn = el("button", "th-go", "Learn"); goBtn.setAttribute("aria-label", "Learn: " + name);
+    goBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); state.theme = k; startPractice("learn"); });
+    s.append(goBtn); d.append(s);
+    const ul = el("ul", "wordlist");
+    list.forEach(w => {
+      const li = el("li"); li.tabIndex = 0; li.title = "Listen";
+      const st = el("span", "st"); st.style.background = BOX_COLORS[bucketOf(w)];
+      const en = el("span"); en.append(el("b", null, w.en)); if (w.tr) en.append(el("span", "tx", w.tr));
+      li.append(st, en, el("span", "wru", w.ru));
+      const say = () => speak(w.en);
+      li.addEventListener("click", say);
+      li.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); say(); } });
+      ul.append(li);
+    });
+    d.append(ul);
+    box.append(d);
+  });
+}
+
+function renderTasks(t) {
+  const box = $("panel-tasks"); box.innerHTML = "";
+  if (!t.tasks.length) { box.append(el("div", "notice", "No sentences in this topic yet.")); return; }
+  box.append(el("p", "intro", "Translate sentences from Russian into English. They use only words from this topic and the topics before it."));
+  const chips = el("div", "chips wrap-chips"); chips.setAttribute("role", "radiogroup"); chips.setAttribute("aria-label", "Grammar");
+  [["all", "All"], ...t.grammar.map(g => [g.id, g.title.split(":")[0].replace(/\s*\(.*\)$/, "")])].forEach(([id, name]) => {
+    const n = id === "all" ? t.tasks.length : t.tasks.filter(k => k.grammar === id).length;
+    if (!n) return;
+    const c = el("button", "chip", name); c.id = "gf-" + id; c.setAttribute("role", "radio");
+    c.setAttribute("aria-pressed", String(state.gfilter === id)); c.setAttribute("aria-checked", String(state.gfilter === id));
+    c.append(el("span", "n", n));
+    c.addEventListener("click", () => { state.gfilter = id; haptic("tap"); saveUiState(); renderTasks(t); });
+    chips.append(c);
+  });
+  box.append(chips);
+  const list = taskPool();
+  const start = el("button", "continue"); start.id = "startTasks";
+  start.innerHTML = `<span class="c-lbl">Start translating</span><span class="c-what"></span><span class="c-go" aria-hidden="true">→</span>`;
+  const tried = list.filter(k => rec(k)).length;
+  start.querySelector(".c-what").textContent = `${list.length} sentences · ${learnedIn(list)} mastered` + (tried < list.length ? ` · ${list.length - tried} new` : "");
+  start.addEventListener("click", () => startPractice("tasks"));
+  box.append(start);
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  state.tab = b.dataset.tab; haptic("tap"); saveUiState(); renderTopic(); window.scrollTo(0, 0);
+}));
+
+/* ---------- screen 3: practice ---------- */
 function startPractice(mode) {
   state.mode = mode; lastKey = null; current = null; haptic("tap");
-  lsSet(LS_STATE, JSON.stringify({ set: state.set, topic: state.topic, mode: state.mode, started: true }));
-  $("ctxMode").textContent = modeName(mode);
-  $("ctxSet").textContent = [setLabel(state.set), topicName(state.topic)].filter(Boolean).join(" · ");
-  showScreen("practice");
+  saveUiState({ started: true });
+  const t = curTopic();
+  $("ctxMode").textContent = mode === "learn" ? "Learn words" : "Translate";
+  $("ctxSet").textContent = `Topic ${t.order} · ` + (mode === "learn" ? themeName(t, state.theme) : grammarTitle(t, state.gfilter));
+  go("practice");
   renderProgress(); renderCard();
 }
 
-function goMenu(fromHistory = false) {
-  if (screen === "menu") return;
-  if (!fromHistory) { try { if (history.state && history.state.screen === "practice") { history.back(); return; } } catch {} }
-  try { speechSynthesis.cancel(); } catch {}
-  showScreen("menu", false);
-  renderMenu();
-}
-
-function topicLabel(it) {
-  const s = SETS.find(x => x.id === it.setId);
-  const t = s && s.topics && it.topic ? s.topics[it.topic] : "";
-  return state.set === ALL ? [s && s.title, t].filter(Boolean).join(" · ") : t || (s ? s.title : "");
-}
-
 function renderCard() {
-  if (current) lastKey = current.key;          // never show the same card twice in a row
+  if (current) lastKey = current.key;
   current = pickNext(); answered = false;
   $("feedback").innerHTML = "";
   const area = $("answerArea"); area.innerHTML = "";
+  $("altBtn").hidden = true;
+  const learn = state.mode === "learn";
+  $("card").classList.toggle("learnmode", learn);
+  $("speakBtn").hidden = !learn;
   if (!current) {
-    $("prompt").textContent = isSentenceMode() ? "No sentences in this set yet." : "No words here yet.";
-    $("task").textContent = isSentenceMode() ? "Sentences come from example sentences with a translation (ex + exRu) or from the set's sentence list." : "";
-    $("topicName").textContent = ""; $("boxInfo").textContent = ""; $("altBtn").hidden = true; setMainText("—");
+    $("prompt").textContent = "Nothing here yet.";
+    $("task").textContent = ""; $("topicName").textContent = ""; $("boxInfo").textContent = ""; setMainText("—");
     return;
   }
-  const it = current, m = state.mode;
-  $("topicName").textContent = topicLabel(it);
+  const it = current, t = curTopic();
   $("boxInfo").textContent = BOX_NAMES[bucketOf(it)];
-  $("altBtn").hidden = true;
-  $("card").classList.toggle("learnmode", m === "learn");
-  if (m === "learn") {
+  if (learn) {
+    $("topicName").textContent = themeName(t, it.topic && t.themes[it.topic] ? it.topic : "_other");
     $("prompt").textContent = it.en + (it.tr ? "  " + it.tr : "");
     const left = pool().filter(x => !rec(x)).length;
     $("task").textContent = left ? `New: ${left} left · try to recall the meaning` : "Review · try to recall the meaning";
-    const hint = document.createElement("button");
-    hint.className = "hint"; hint.id = "reveal"; hint.textContent = "Tap to see the translation";
+    const hint = el("button", "hint", "Tap to see the translation"); hint.id = "reveal";
     hint.addEventListener("click", reveal);
-    area.appendChild(hint);
-    const sh = document.createElement("div"); sh.className = "swipehint";
-    sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>";
-    area.appendChild(sh);
+    area.append(hint, swipeHint());
     setMainText("Show translation");
     speak(it.en);
     return;
   }
-  if (m === "sentences") {
-    $("prompt").textContent = it.ru;
-    $("task").textContent = it.word ? `Translate into English · uses “${it.word}”` : "Translate into English";
-    const ta = document.createElement("textarea");
-    ta.id = "answer"; ta.setAttribute("autocapitalize", "sentences"); ta.spellcheck = false; ta.rows = 3;
-    ta.placeholder = "Type the English sentence…";
-    ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onMain(); } });
-    area.appendChild(ta);
-    setMainText("Check");
-    if (!inTelegram && window.matchMedia("(pointer: fine)").matches) setTimeout(() => ta.focus({ preventScroll: true }), 30);
-    return;
-  }
-  if (m === "write") {
-    $("prompt").textContent = it.ru;
-    $("task").textContent = "Write it in English";
-    const inp = document.createElement("input");
-    inp.type = "text"; inp.id = "answer"; inp.autocomplete = "off"; inp.setAttribute("autocapitalize", "none"); inp.spellcheck = false;
-    inp.placeholder = "Type in English…";
-    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); onMain(); } });
-    area.appendChild(inp);
-    setMainText("Check");
-    if (!inTelegram && window.matchMedia("(pointer: fine)").matches) setTimeout(() => inp.focus({ preventScroll: true }), 30);
-  } else {
-    const isEn = m === "pickEn";
-    $("prompt").textContent = isEn ? it.ru : it.en;
-    $("task").textContent = isEn ? "Choose the English" : "Выбери перевод";
-    const src = setItems().length >= 4 ? setItems() : allItems();
-    const others = shuffle(src.filter(x => x.key !== it.key && x.en !== it.en));
-    const same = others.filter(x => x.topic && x.topic === it.topic), rest = others.filter(x => !(x.topic && x.topic === it.topic));
-    choiceOptions = shuffle([it, ...same.concat(rest).slice(0, 3)]);
-    const box = document.createElement("div"); box.className = "opts";
-    choiceOptions.forEach((o, i) => {
-      const b = document.createElement("button");
-      b.className = "opt"; b.id = "opt" + i; b.textContent = isEn ? o.en : o.ru;
-      b.addEventListener("click", () => choose(i));
-      box.appendChild(b);
-    });
-    area.appendChild(box);
-    setMainText("Skip");
-  }
+  $("topicName").textContent = grammarTitle(t, it.grammar);
+  $("prompt").textContent = it.ru;
+  $("task").textContent = "Translate into English";
+  const ta = el("textarea"); ta.id = "answer"; ta.setAttribute("autocapitalize", "sentences"); ta.spellcheck = false; ta.rows = 3;
+  ta.placeholder = "Type the English sentence…";
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onMain(); } });
+  area.append(ta);
+  setMainText("Check");
+  if (!inTelegram && window.matchMedia("(pointer: fine)").matches) setTimeout(() => ta.focus({ preventScroll: true }), 30);
 }
-
-function showFeedback(kind, input) {
-  const it = current, fb = $("feedback");
-  const marks = { right: "Well done! ✓", almost: "Almost! Check the spelling", wrong: "Correct answer:" };
-  const wrap = document.createElement("div");
-  wrap.className = "fb " + (kind === "wrong" ? "bad" : "good");
-  const mark = document.createElement("span"); mark.className = "mark"; mark.textContent = marks[kind]; wrap.append(mark);
-  const ans = document.createElement("span"); ans.className = "ans";
-  ans.textContent = state.mode === "pickRu" ? it.ru : it.en;
-  if (it.tr && state.mode !== "pickRu") { const t = document.createElement("span"); t.className = "tx"; t.textContent = it.tr; ans.append(t); }
-  wrap.append(ans);
-  const tr = document.createElement("span"); tr.className = "tr"; tr.textContent = state.mode === "pickRu" ? it.en : it.ru; wrap.append(tr);
-  if (it.ex && !isSentenceMode()) { const ex = document.createElement("span"); ex.className = "ex"; ex.textContent = it.ex; wrap.append(ex); }
-  if (it.exRu && !isSentenceMode()) { const er = document.createElement("span"); er.className = "exru"; er.textContent = it.exRu; wrap.append(er); }
-  if (input !== undefined && kind !== "right" && wordCount(it.en) >= 2) {
-    ans.remove(); wrap.insertBefore(renderDiff(input, it.en), tr);
-    if (kind === "wrong") mark.textContent = "Not quite:";
-  }
-  if (kind === "wrong" && input !== undefined) {
-    const o = document.createElement("button"); o.className = "link override"; o.id = "overrideBtn";
-    o.textContent = "My answer is also correct"; o.addEventListener("click", overrideCorrect); wrap.append(o);
-  }
-  fb.innerHTML = ""; fb.append(wrap);
-}
+function swipeHint() { const sh = el("div", "swipehint"); sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>"; return sh; }
 
 function reveal() {
   if (answered) return;
   answered = true; haptic("tap");
   const it = current, area = $("answerArea"); area.innerHTML = "";
-  const f = document.createElement("div"); f.className = "flip";
-  const add = (cls, text) => { if (!text) return; const e = document.createElement("span"); e.className = cls; e.textContent = text; f.append(e); };
-  add("ru", it.ru); add("ex", it.ex); add("exru", it.exRu);
-  area.append(f);
-  const sh = document.createElement("div"); sh.className = "swipehint";
-  sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>";
-  area.append(sh);
+  const f = el("div", "flip");
+  [["ru", it.ru], ["ex", it.ex], ["exru", it.exRu]].forEach(([c, x]) => { if (x) f.append(el("span", c, x)); });
+  area.append(f, swipeHint());
   setMainText("I know it ✓");
   $("altBtn").hidden = false;
 }
@@ -984,71 +1202,56 @@ function learnAnswer(known, viaSwipe = false) {
   renderCard();
 }
 
-// show the learner's answer with wrong words struck, and the correct sentence with missed words marked
-function renderDiff(input, en) {
-  const target = en.split(/\s*\/\s*/)[0];
-  const rawA = input.trim().split(/\s+/), rawB = target.trim().split(/\s+/);
-  const key = w => norm(w).replace(/ /g, "");
-  const { inA, inB } = lcsAlign(rawA.map(key), rawB.map(key));
-  const box = document.createElement("div"); box.className = "diff";
-  const line = (label, words, flags, tag) => {
-    const l = document.createElement("span"); l.className = "lbl"; l.textContent = label; box.append(l);
-    const row = document.createElement("span");
-    words.forEach((w, i) => {
-      const el = document.createElement(flags[i] ? "span" : tag); el.textContent = w;
-      row.append(el, document.createTextNode(" "));
-    });
-    box.append(row);
-  };
-  line("Your answer", rawA, inA, "del");
-  line("Correct", rawB, inB, "mark");
-  return box;
-}
 let undoRecord = null;
+function record(ok) {
+  const it = current;
+  const p = progress[it.store] || (progress[it.store] = {});
+  undoRecord = { store: it.store, id: it.id, prev: p[it.id] ? p[it.id].slice() : null };
+  const r = p[it.id] || [0, 0, 0];
+  r[1]++; r[2] = today(); r[0] = ok ? Math.min(MAX_BOX, r[0] + 1) : 0;
+  p[it.id] = r;
+  saveProgress(it.store);
+  renderProgress();
+}
 function overrideCorrect() {
   if (!undoRecord) return;
-  const { setId, id, prev } = undoRecord;
+  const { store, id, prev } = undoRecord;
   const r = prev ? prev.slice() : [0, 0, 0];
   r[1]++; r[2] = today(); r[0] = Math.min(MAX_BOX, r[0] + 1);
-  progress[setId][id] = r; saveProgress(setId); renderProgress();
+  progress[store][id] = r; saveProgress(store); renderProgress();
   undoRecord = null; haptic("success");
   const fb = $("feedback").querySelector(".fb");
   fb.className = "fb good"; fb.querySelector(".mark").textContent = "Counted as correct ✓";
   const b = $("overrideBtn"); if (b) b.remove();
 }
 
-function record(ok) {
-  const it = current;
-  const p = progress[it.setId] || (progress[it.setId] = {});
-  undoRecord = { setId: it.setId, id: it.id, prev: p[it.id] ? p[it.id].slice() : null };
-  const r = p[it.id] || [0, 0, 0];
-  r[1]++; r[2] = today(); r[0] = ok ? Math.min(MAX_BOX, r[0] + 1) : 0;
-  p[it.id] = r;
-  saveProgress(it.setId);
-  renderProgress();
-}
-
 function check() {
-  const inp = $("answer"); const g = (isSentenceMode() ? gradeSentence : grade)(inp.value, current.en);
+  const inp = $("answer"), it = current;
+  const g = gradeSentence(inp.value, it.en);
   if (g === "empty") { inp.focus(); haptic("warning"); return; }
   answered = true; inp.disabled = true;
   const ok = g !== "wrong";
-  record(ok); showFeedback(g, inp.value); haptic(ok ? "success" : "error");
-  if (ok) speak(current.en);
-  setMainText("Next →");
-}
-
-function choose(i) {
-  if (answered) return;
-  answered = true; haptic("tap");
-  const ok = choiceOptions[i].key === current.key;
-  document.querySelectorAll(".opt").forEach((b, j) => {
-    b.disabled = true;
-    if (choiceOptions[j].key === current.key) b.classList.add("right");
-    else if (j === i) b.classList.add("wrong");
-  });
-  record(ok); showFeedback(ok ? "right" : "wrong"); haptic(ok ? "success" : "error");
-  if (ok) speak(current.en);
+  record(ok); haptic(ok ? "success" : "error");
+  const target = g === "right" ? (it.en.find(e => norm(e) === norm(inp.value)) || it.en[0]) : closest(inp.value, it.en);
+  const fb = el("div", "fb " + (ok ? "good" : "bad"));
+  fb.append(el("span", "mark", { right: "Well done! ✓", almost: "Almost! Check the spelling", wrong: "Not quite:" }[g]));
+  if (g === "right") fb.append(el("span", "ans", target));
+  else fb.append(renderDiff(inp.value, target));
+  const others = it.en.filter(e => e !== target);
+  if (others.length) fb.append(el("span", "tr", "Also correct: " + others.join(" · ")));
+  if (g === "wrong") {
+    const o = el("button", "link override", "My answer is also correct"); o.id = "overrideBtn";
+    o.addEventListener("click", overrideCorrect); fb.append(o);
+  }
+  const t = curTopic(), gt = grammarTitle(t, it.grammar);
+  if (gt) {
+    const r = el("button", "rulelink", "📖 See the rule: " + gt + " →"); r.id = "ruleLink";
+    r.addEventListener("click", () => { state.tab = "grammar"; saveUiState(); pendingScroll = "sec-" + it.grammar; goBack(); });
+    fb.append(r);
+  }
+  $("feedback").innerHTML = ""; $("feedback").append(fb);
+  $("speakBtn").hidden = false;
+  speak(target);
   setMainText("Next →");
 }
 
@@ -1056,28 +1259,23 @@ function onMain() {
   if (!current) return;
   if (state.mode === "learn") return answered ? learnAnswer(true) : reveal();
   if (answered) return renderCard();
-  if (state.mode === "write" || state.mode === "sentences") return check();
-  renderCard();
+  check();
 }
 
 function renderProgress() {
-  const list = pool();
-  const buckets = [0, 0, 0, 0, 0];
+  const list = pool(), buckets = [0, 0, 0, 0, 0];
   list.forEach(it => { buckets[bucketOf(it)] += 1; });
   $("bar").innerHTML = list.length ? buckets.map((n, i) => n ? `<span style="width:${n / list.length * 100}%;background:${BOX_COLORS[i]}" title="${BOX_NAMES[i]}: ${n}"></span>` : "").join("") : "";
   $("legend").innerHTML = buckets.map((n, i) => `<span><i style="background:${BOX_COLORS[i]}"></i>${BOX_NAMES[i]} ${n}</span>`).join("");
-  const items = setItems();
-  $("score").textContent = `${items.filter(it => boxOf(it) >= LEARNED_FROM).length} / ${items.length}`;
+  $("score").textContent = `${learnedIn(list)} / ${list.length}`;
 }
-
-function renderAll() { if (screen === "menu") renderMenu(); else { renderProgress(); renderCard(); } }
 
 /* ---------- speech ---------- */
 function speak(text) {
   try {
     if (!("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.split(/\s*\/\s*/)[0].replace(/…/g, ""));
+    const u = new SpeechSynthesisUtterance(text.split(/\s*\/\s*/)[0].replace(/\([^)]*\)/g, "").replace(/…/g, ""));
     u.lang = "en-GB"; u.rate = 0.9;
     const vs = speechSynthesis.getVoices();
     const v = vs.find(v => /en-GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang));
@@ -1085,8 +1283,13 @@ function speak(text) {
     speechSynthesis.speak(u);
   } catch {}
 }
+function speakCurrent() {
+  if (!current) return;
+  if (state.mode === "learn") speak(current.en);
+  else if (answered) speak(current.en[0]);
+}
 
-/* ---------- swipe (Learn mode): right = I know it, left = repeat ---------- */
+/* ---------- swipe (Learn): right = I know it, left = repeat ---------- */
 (function setupSwipe() {
   const card = $("card");
   let sw = null, suppressClick = false;
@@ -1133,29 +1336,34 @@ function speak(text) {
 /* ---------- wiring ---------- */
 $("mainBtn").addEventListener("click", onMain);
 $("altBtn").addEventListener("click", () => learnAnswer(false));
-$("speakBtn").addEventListener("click", () => current && speak(current.en));
-$("backBtn").addEventListener("click", () => goMenu());
-$("continueBtn").addEventListener("click", () => startPractice(state.mode));
-window.addEventListener("popstate", () => { if (screen === "practice") goMenu(true); });
+$("speakBtn").addEventListener("click", speakCurrent);
+$("backBtn").addEventListener("click", () => goBack());
+$("topicBack").addEventListener("click", () => goBack());
+$("continueBtn").addEventListener("click", () => {
+  const saved = parse(lsGet(LS_STATE)) || {};
+  if (!TOPICS.some(t => t.id === saved.topic)) return;
+  Object.assign(state, { topic: saved.topic, theme: saved.theme || "all", gfilter: saved.gfilter || "all", tab: saved.tab || "grammar" });
+  go("topic");
+  startPractice(saved.mode === "tasks" ? "tasks" : "learn");
+});
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && screen !== "menu") { goBack(); return; }
   if (screen !== "practice") return;
-  if (e.key === "Escape") { goMenu(); return; }
   if (e.target.id === "answer" || e.target.tagName === "BUTTON") return;
   if (e.key === "Enter" && (answered || state.mode === "learn")) { e.preventDefault(); onMain(); }
-  if (state.mode === "learn" && answered && (e.key === "Backspace" || e.key === "2")) learnAnswer(false);
-  if (state.mode === "learn" && e.key === "ArrowRight") learnAnswer(true, true);
-  if (state.mode === "learn" && e.key === "ArrowLeft") learnAnswer(false, true);
-  if (!answered && (state.mode === "pickEn" || state.mode === "pickRu") && /^[1-4]$/.test(e.key)) choose(+e.key - 1);
+  if (state.mode !== "learn") return;
+  if (answered && (e.key === "Backspace" || e.key === "2")) learnAnswer(false);
+  if (e.key === "ArrowRight") learnAnswer(true, true);
+  if (e.key === "ArrowLeft") learnAnswer(false, true);
 });
 $("resetArea").addEventListener("click", e => {
   const id = e.target.id, area = $("resetArea");
-  const plain = `<button class="link" id="resetBtn">Reset this set</button>`;
+  const plain = `<button class="link" id="resetBtn">Reset progress in this topic</button>`;
   if (id === "resetBtn") {
-    area.innerHTML = `<span class="confirm">Delete progress for this set? <button class="link danger" id="resetYes">Yes, reset</button><button class="link" id="resetNo">Cancel</button></span>`;
+    area.innerHTML = `<span class="confirm">Delete words and tasks progress for this topic? <button class="link danger" id="resetYes">Yes, reset</button><button class="link" id="resetNo">Cancel</button></span>`;
   } else if (id === "resetYes") {
-    const ids = state.set === ALL ? SETS.map(s => s.id) : [state.set];
-    ids.forEach(sid => { progress[sid] = {}; saveProgress(sid); });
-    renderMenu(); area.innerHTML = plain;
+    ["ew_p_", "ew_t_"].forEach(p => { progress[p + state.topic] = {}; saveProgress(p + state.topic); });
+    area.innerHTML = plain; renderTopic();
   } else if (id === "resetNo") area.innerHTML = plain;
 });
 
@@ -1163,24 +1371,21 @@ $("resetArea").addEventListener("click", e => {
   setupTelegram();
   if (cloudOK) $("storeInfo").textContent = "Progress syncs with your Telegram account";
   try {
-    SETS = loadData();
+    TOPICS = loadData();
   } catch (err) {
     $("loading").hidden = true;
     const box = $("loadError"); box.hidden = false;
-    box.textContent = "The word list in this page has a formatting error: " + err.message;
+    box.textContent = "The course data in this page has a formatting error: " + err.message;
     return;
   }
-  await loadProgress(SETS.map(s => s.id));
+  await loadProgress(TOPICS.flatMap(t => ["ew_p_" + t.id, "ew_t_" + t.id]));
   const saved = parse(lsGet(LS_STATE)) || {};
-  state.set = (saved.set && (saved.set === ALL || SETS.some(s => s.id === saved.set))) ? saved.set : (SETS[0] && SETS[0].id);
-  const cs = currentSet();
-  state.topic = saved.topic && cs && cs.topics && cs.topics[saved.topic] ? saved.topic : "all";
-  if (saved.mode && MODES.some(m => m.id === saved.mode)) state.mode = saved.mode;
+  if (TOPICS.some(t => t.id === saved.topic)) Object.assign(state, { topic: saved.topic, tab: saved.tab || "grammar", theme: saved.theme || "all", gfilter: saved.gfilter || "all" });
+  else state.topic = TOPICS[0] && TOPICS[0].id;
+  try { history.replaceState({ screen: "menu" }, ""); } catch {}
   $("loading").hidden = true;
-  showScreen("menu", false);
-  renderMenu();
+  showScreen("menu");
 })();
-
 </script>
 </body>
 </html>
