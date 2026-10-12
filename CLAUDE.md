@@ -22,6 +22,7 @@ Never use a word that first appears in a later topic. If a natural sentence need
 - Keep topic ids, word ids (`w001`…), task ids (`t01`…) and grammar ids stable: progress is saved by them.
   New words get the next free id in that topic.
 - Words: `en`, `ru`, `tr`, `topic` (theme key), and `ex` + `exRu` when possible.
+  For one big page (like clothes), use ONE theme and split it with `group` sub-headings instead of many small themes.
 - Tasks: `ru`, `en` (list: main answer first, then other correct variants such as short forms), `grammar`.
   Add a hint in brackets to `ru` when English needs something Russian doesn't show, e.g. "Это груши. (рядом)".
 

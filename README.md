@@ -29,7 +29,8 @@ Everything is in the JSON block `<script id="words" type="application/json">` in
   "tasks":   [{"id": "t01", "ru": "Я дома.", "en": ["I am at home.", "I'm at home."], "grammar": "g-tobe"}]
 }]}
 ```
-- **words:** `en`, `ru`, optional `tr` (transcription), `topic` (a theme key), `ex` + `exRu` (example shown on the flashcard).
+- **words:** `en`, `ru`, optional `tr` (transcription), `topic` (a theme key), `group` (optional sub-heading inside the theme,
+  e.g. "Shoes" inside "Clothes & accessories"; keep a group's words next to each other), `ex` + `exRu` (example shown on the flashcard).
   In `en`, text in `(…)` is optional and `a / b` lists alternatives.
 - **tasks:** `ru` is the prompt; `en` is a list: the first item is the main answer, the rest are other accepted answers;
   `grammar` is the id of the grammar section it practises.
