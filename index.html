@@ -327,7 +327,7 @@ textarea#answer:focus { border-color: var(--accent); }
       "title": "Topic 1 · Sounds & first words",
       "pages": "14–20",
       "added": "2026-10-08",
-      "themes": {"people": "People & body", "food": "Food", "animals": "Animals", "things": "Things", "clothes": "Clothes", "numbers": "Numbers", "nature": "Nature & time", "describe": "Other words", "plurals": "Irregular plurals", "pluralonly": "Only plural", "uncount": "Only singular", "pronouns": "Pronouns & verbs"},
+      "themes": {"people": "People & body", "food": "Food", "animals": "Animals", "things": "Things", "clothes": "Clothes", "numbers": "Numbers", "nature": "Nature & time", "describe": "Other words", "plurals": "Irregular plurals", "pluralonly": "Only plural", "uncount": "Only singular", "pronouns": "Pronouns & verbs", "pluralex": "Plural examples (-s / -es)"},
       "grammar": [
         {"id": "g-article", "title": "Неопределённый артикль a / an",
          "body": "Артикль **a / an** произошёл от слова *one* — «один». Он ставится только перед **исчисляемым** существительным **в единственном числе** и значит «один из многих, какой-то, любой».\n\n> I can't find a taxi. — Не могу найти такси. (Какое? Любое.)\n\nВо множественном числе артикль не ставится:\n\n> a book → books\n\n### a или an?\n| a [ə] — перед согласным звуком | an [ən] — перед гласным звуком |\n| a bus | an uncle |\n| a plate | an umbrella |\n| a year | an hour |\n\n! Смотрим на **звук**, а не на букву. *Hour* начинается с гласного звука [aʊ], поэтому **an hour**. *Year* начинается с согласного [j], поэтому **a year**."},
@@ -496,7 +496,20 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "w157", "en": "I know", "ru": "я знаю", "tr": "/aɪ nəʊ/", "topic": "pronouns", "ex": "I know them.", "exRu": "Я их знаю."},
         {"id": "w158", "en": "uncle", "ru": "дядя", "tr": "/ˈʌŋkl/", "topic": "people", "ex": "My uncle has got a car.", "exRu": "У моего дяди есть машина."},
         {"id": "w159", "en": "hour", "ru": "час", "tr": "/ˈaʊə/", "topic": "nature", "ex": "I have got an hour.", "exRu": "У меня есть час."},
-        {"id": "w160", "en": "year", "ru": "год", "tr": "/jɪə/", "topic": "nature", "ex": "It is a long year.", "exRu": "Это длинный год."}
+        {"id": "w160", "en": "year", "ru": "год", "tr": "/jɪə/", "topic": "nature", "ex": "It is a long year.", "exRu": "Это длинный год."},
+        {"id": "w161", "en": "week", "ru": "неделя", "tr": "/wiːk/", "topic": "pluralex", "ex": "A month has got four weeks.", "exRu": "В месяце четыре недели."},
+        {"id": "w162", "en": "street", "ru": "улица", "tr": "/striːt/", "topic": "pluralex", "ex": "My house is on a long street.", "exRu": "Мой дом на длинной улице."},
+        {"id": "w163", "en": "fork", "ru": "вилка", "tr": "/fɔːk/", "topic": "pluralex", "ex": "I have got two forks and two plates.", "exRu": "У меня есть две вилки и две тарелки."},
+        {"id": "w164", "en": "day", "ru": "день", "tr": "/deɪ/", "topic": "pluralex", "ex": "It is a long day.", "exRu": "Это длинный день."},
+        {"id": "w165", "en": "game", "ru": "игра", "tr": "/ɡeɪm/", "topic": "pluralex", "ex": "My brother has got a game.", "exRu": "У моего брата есть игра."},
+        {"id": "w166", "en": "team", "ru": "команда", "tr": "/tiːm/", "topic": "pluralex", "ex": "We have got a tennis team.", "exRu": "У нас есть теннисная команда."},
+        {"id": "w167", "en": "face", "ru": "лицо", "tr": "/feɪs/", "topic": "pluralex", "ex": "It is my face.", "exRu": "Это моё лицо."},
+        {"id": "w168", "en": "place", "ru": "место", "tr": "/pleɪs/", "topic": "pluralex", "ex": "It is my place.", "exRu": "Это моё место."},
+        {"id": "w169", "en": "case", "ru": "футляр; чемодан; случай", "tr": "/keɪs/", "topic": "pluralex", "ex": "My glasses are in the case.", "exRu": "Мои очки в футляре."},
+        {"id": "w170", "en": "fox", "ru": "лиса", "tr": "/fɒks/", "topic": "pluralex", "ex": "The fox is in the tree.", "exRu": "Лиса на дереве."},
+        {"id": "w171", "en": "tax", "ru": "налог", "tr": "/tæks/", "topic": "pluralex"},
+        {"id": "w172", "en": "wish", "ru": "желание", "tr": "/wɪʃ/", "topic": "pluralex"},
+        {"id": "w173", "en": "taxi", "ru": "такси", "tr": "/ˈtæksi/", "topic": "pluralex", "ex": "My uncle has got a taxi.", "exRu": "У моего дяди есть такси."}
       ],
       "tasks": [
         {"id": "t01", "ru": "У меня есть яблоко.", "en": ["I have got an apple.", "I've got an apple."], "grammar": "g-article"},
@@ -534,7 +547,16 @@ textarea#answer:focus { border-color: var(--accent); }
         {"id": "t33", "ru": "Их собака в доме.", "en": ["Their dog is in the house."], "grammar": "g-pronouns"},
         {"id": "t34", "ru": "У собаки есть свой мяч.", "en": ["The dog has got its ball."], "grammar": "g-pronouns"},
         {"id": "t35", "ru": "Покажи им наш дом.", "en": ["Show them our house."], "grammar": "g-pronouns"},
-        {"id": "t36", "ru": "Купи нам дыню.", "en": ["Buy us a melon."], "grammar": "g-pronouns"}
+        {"id": "t36", "ru": "Купи нам дыню.", "en": ["Buy us a melon."], "grammar": "g-pronouns"},
+        {"id": "t37", "ru": "У меня есть яблоко и лимон.", "en": ["I have got an apple and a lemon.", "I've got an apple and a lemon."], "grammar": "g-article"},
+        {"id": "t38", "ru": "У моего папы есть пальто и галстук.", "en": ["My father has got a coat and a tie.", "My dad has got a coat and a tie."], "grammar": "g-article"},
+        {"id": "t39", "ru": "У меня есть луковица и помидор.", "en": ["I have got an onion and a tomato.", "I've got an onion and a tomato."], "grammar": "g-article"},
+        {"id": "t40", "ru": "У моего дяди есть такси.", "en": ["My uncle has got a taxi."], "grammar": "g-article"},
+        {"id": "t41", "ru": "У меня есть две вилки и три тарелки.", "en": ["I have got two forks and three plates.", "I've got two forks and three plates."], "grammar": "g-plural"},
+        {"id": "t42", "ru": "У девочки есть шесть платьев.", "en": ["The girl has got six dresses."], "grammar": "g-plural"},
+        {"id": "t43", "ru": "У моего папы трое часов.", "en": ["My father has got three watches.", "My dad has got three watches."], "grammar": "g-plural"},
+        {"id": "t44", "ru": "В месяце четыре недели.", "en": ["A month has got four weeks.", "The month has got four weeks.", "There are four weeks in a month."], "grammar": "g-plural"},
+        {"id": "t45", "ru": "Две лисы на дереве.", "en": ["Two foxes are in the tree.", "Two foxes are on the tree."], "grammar": "g-plural"}
       ]
     },
     {
