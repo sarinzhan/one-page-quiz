@@ -111,7 +111,10 @@ body.tg .btn.main { display: none; }
 .card[data-swipe]::after { position: absolute; top: 14px; padding: 4px 10px; border-radius: 8px; font: 700 .85rem var(--f-body); letter-spacing: .04em; }
 .card[data-swipe="right"]::after { content: "I know it ✓"; right: 14px; color: var(--good); background: var(--good-bg); }
 .card[data-swipe="left"]::after { content: "↺ Repeat"; left: 14px; color: var(--pen); background: var(--pen-bg); }
-.swipehint { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); }
+.swipehint { display: flex; justify-content: space-between; gap: 10px; }
+.swipebtn { flex: 1 1 0; border: 1.5px solid currentColor; border-radius: 12px; padding: 10px 12px; font: 600 .9rem var(--f-body); cursor: pointer; }
+.swipebtn.repeat { color: var(--pen); background: var(--pen-bg); }
+.swipebtn.know { color: var(--good); background: var(--good-bg); }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 
 .screen { display: flex; flex-direction: column; gap: 18px; }
@@ -1689,7 +1692,14 @@ function renderCard() {
   setMainText("Check");
   if (!inTelegram && window.matchMedia("(pointer: fine)").matches) setTimeout(() => ta.focus({ preventScroll: true }), 30);
 }
-function swipeHint() { const sh = el("div", "swipehint"); sh.innerHTML = "<span>← swipe: repeat</span><span>swipe: I know it →</span>"; return sh; }
+function swipeHint() {
+  const sh = el("div", "swipehint");
+  const rp = el("button", "swipebtn repeat", "← Repeat"), kn = el("button", "swipebtn know", "I know it →");
+  rp.type = kn.type = "button"; rp.title = "Same as swiping left (←)"; kn.title = "Same as swiping right (→)";
+  rp.addEventListener("click", () => swipeOut(false));
+  kn.addEventListener("click", () => swipeOut(true));
+  sh.append(rp, kn); return sh;
+}
 
 function reveal() {
   if (answered) return;
@@ -1802,7 +1812,7 @@ function speakCurrent() {
   const reset = () => { card.classList.remove("dragging"); card.style.transform = ""; delete card.dataset.swipe; };
   card.addEventListener("pointerdown", e => {
     if (screen !== "practice" || state.mode !== "learn" || !current || e.button > 0) return;
-    if (e.target.closest("#mainBtn, #altBtn, #speakBtn")) return;
+    if (e.target.closest("#mainBtn, #altBtn, #speakBtn, .swipebtn")) return;
     sw = { x: e.clientX, y: e.clientY, dx: 0, active: false, id: e.pointerId };
   });
   card.addEventListener("pointermove", e => {
@@ -1826,12 +1836,19 @@ function speakCurrent() {
     suppressClick = true; setTimeout(() => { suppressClick = false; }, 50);
     card.classList.remove("dragging");
     if (Math.abs(dx) < 90) { reset(); return; }
-    const known = dx > 0;
+    swipeOut(dx > 0);
+  };
+  /* fly the card out like a finished swipe, then record the answer (also used by the buttons) */
+  let flying = false;
+  window.swipeOut = known => {
+    if (flying || screen !== "practice" || state.mode !== "learn" || !current) return;
+    flying = true;
+    card.dataset.swipe = known ? "right" : "left";
     card.style.transform = `translateX(${known ? 120 : -120}%) rotate(${known ? 12 : -12}deg)`;
     setTimeout(() => {
       card.classList.add("dragging"); reset();
       learnAnswer(known, true);
-      requestAnimationFrame(() => card.classList.remove("dragging"));
+      requestAnimationFrame(() => { card.classList.remove("dragging"); flying = false; });
     }, 200);
   };
   card.addEventListener("pointerup", end);
@@ -1859,8 +1876,8 @@ document.addEventListener("keydown", e => {
   if (e.key === "Enter" && (answered || state.mode === "learn")) { e.preventDefault(); onMain(); }
   if (state.mode !== "learn") return;
   if (answered && (e.key === "Backspace" || e.key === "2")) learnAnswer(false);
-  if (e.key === "ArrowRight") learnAnswer(true, true);
-  if (e.key === "ArrowLeft") learnAnswer(false, true);
+  if (e.key === "ArrowRight") swipeOut(true);
+  if (e.key === "ArrowLeft") swipeOut(false);
 });
 $("resetArea").addEventListener("click", e => {
   const id = e.target.id, area = $("resetArea");
