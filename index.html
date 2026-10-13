@@ -1653,8 +1653,7 @@ function renderVocab(t) {
       en.append(el("b", null, w.en)); if (w.tr) en.append(el("span", "tx", w.tr));
       const ru = el("button", "wru"); ru.type = "button"; ru.title = "Hide / show the translation";
       ru.append(el("span", null, w.ru));
-      const shown = (cls, flip) => box.classList.contains(cls) === li.classList.contains(flip);
-      en.addEventListener("click", () => { li.classList.toggle("flip-en"); haptic("tap"); if (shown("hide-en", "flip-en")) speak(w.en); });
+      en.addEventListener("click", () => { li.classList.toggle("flip-en"); haptic("tap"); });
       ru.addEventListener("click", () => { li.classList.toggle("flip-ru"); haptic("tap"); });
       const sayBtn = el("button", "wsay", "🔊"); sayBtn.type = "button"; sayBtn.setAttribute("aria-label", "Listen: " + w.en);
       sayBtn.addEventListener("click", () => speak(w.en));
