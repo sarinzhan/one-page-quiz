@@ -227,7 +227,15 @@ textarea#answer:focus { border-color: var(--accent); }
 .wordlist .st { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; grid-row: span 2; }
 .wordlist b { font-weight: 600; overflow-wrap: anywhere; }
 .wordlist .wgroup { display: block; padding: 14px 0 4px; border-top: 0; cursor: default; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
-.wordlist .wru { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+.wordlist .wru { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; justify-self: start; border: 0; background: none; padding: 0; font-family: inherit; text-align: left; cursor: pointer; border-radius: 6px; }
+/* hidden translation: the whole panel (.hide-ru) or one word (li.flip inverts the panel setting) */
+.hide-ru .wordlist li:not(.flip) .wru, #panel-vocab:not(.hide-ru) .wordlist li.flip .wru { color: transparent; background: var(--rule); min-width: 6em; user-select: none; }
+.hide-ru .wordlist li:not(.flip) .wru::after, #panel-vocab:not(.hide-ru) .wordlist li.flip .wru::after { content: "tap to show"; position: absolute; }
+.wordlist .wru { position: relative; }
+.wordlist .wru::after { left: 6px; color: var(--muted); font-size: .75rem; }
+.vlabel .label { margin: 0; }
+.vlabel { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.rutoggle { border: 1px solid var(--rule); background: var(--sheet); color: var(--accent); border-radius: 999px; padding: 6px 12px; font: 600 .8rem var(--f-body); cursor: pointer; white-space: nowrap; text-transform: none; letter-spacing: 0; }
 @media (prefers-reduced-motion: reduce) { .theme .chev { transition: none; } }
 
 /* tasks */
@@ -1594,7 +1602,19 @@ function renderVocab(t) {
   allBtn.querySelector(".c-what").textContent = `${learnedIn(t.words)} of ${t.words.length} learned` + (fresh ? ` · ${fresh} new` : "");
   allBtn.addEventListener("click", () => { state.theme = "all"; startPractice("learn"); });
   box.append(allBtn);
-  box.append(el("p", "label", "Themes · tap to see the words"));
+  box.classList.toggle("hide-ru", !!state.hideRu);
+  const vl = el("div", "vlabel");
+  const rt = el("button", "rutoggle"); rt.type = "button";
+  const rtText = () => { rt.textContent = state.hideRu ? "👁 Show all translations" : "🙈 Hide all translations"; rt.setAttribute("aria-pressed", !!state.hideRu); };
+  rtText();
+  rt.addEventListener("click", () => {
+    state.hideRu = !state.hideRu; haptic("tap"); saveUiState();
+    box.classList.toggle("hide-ru", state.hideRu);
+    box.querySelectorAll(".wordlist li.flip").forEach(li => li.classList.remove("flip"));
+    rtText();
+  });
+  vl.append(el("p", "label", "Themes · tap to see the words"), rt);
+  box.append(vl);
   const groups = Object.entries(t.themes).map(([k, name]) => [k, name, t.words.filter(w => w.topic === k)]);
   const other = t.words.filter(w => !w.topic || !t.themes[w.topic]);
   if (other.length) groups.push(["_other", "Other", other]);
@@ -1615,7 +1635,10 @@ function renderVocab(t) {
       const li = el("li"); li.tabIndex = 0; li.title = "Listen";
       const st = el("span", "st"); st.style.background = BOX_COLORS[bucketOf(w)];
       const en = el("span"); en.append(el("b", null, w.en)); if (w.tr) en.append(el("span", "tx", w.tr));
-      li.append(st, en, el("span", "wru", w.ru));
+      const ru = el("button", "wru", w.ru); ru.type = "button"; ru.title = "Hide / show the translation";
+      ru.addEventListener("click", e => { e.stopPropagation(); li.classList.toggle("flip"); haptic("tap"); });
+      ru.addEventListener("keydown", e => e.stopPropagation());
+      li.append(st, en, ru);
       const say = () => speak(w.en);
       li.addEventListener("click", say);
       li.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); say(); } });
@@ -1922,6 +1945,7 @@ $("resetArea").addEventListener("click", e => {
   if (TOPICS.some(t => t.id === saved.topic)) Object.assign(state, { topic: saved.topic, tab: saved.tab || "grammar", theme: saved.theme || "all", gfilter: saved.gfilter || "all" });
   else state.topic = TOPICS[0] && TOPICS[0].id;
   state.dir = saved.dir === "ru" ? "ru" : "en";
+  state.hideRu = !!saved.hideRu;
   try { history.replaceState({ screen: "menu" }, ""); } catch {}
   $("loading").hidden = true;
   showScreen("menu");
