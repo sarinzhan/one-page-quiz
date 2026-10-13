@@ -59,6 +59,8 @@ h1 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; t
 .seg::-webkit-scrollbar { display: none; }
 .seg button { flex: 1 0 auto; border: 0; background: transparent; color: var(--muted); font: 600 .8rem var(--f-body); padding: 8px 8px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.dirseg button { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: .9rem; padding: 8px; }
+.dirseg small { font-size: .72rem; font-weight: 500; opacity: .8; }
 
 .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 14px; }
 .meta { display: flex; justify-content: space-between; gap: 8px; font-size: .78rem; color: var(--muted); }
@@ -1221,7 +1223,7 @@ const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
 const $ = id => document.getElementById(id);
 
 let TOPICS = [];
-let state = { topic: null, tab: "grammar", theme: "all", gfilter: "all", mode: "learn" };
+let state = { topic: null, tab: "grammar", theme: "all", gfilter: "all", mode: "learn", dir: "en" };  // dir: "en" = EN → RU, "ru" = RU → EN
 let progress = {};              // storage key -> { itemId: [box, seen, day] }
 let current = null, lastKey = null, answered = false, screen = "menu", pendingScroll = null;
 
@@ -1524,7 +1526,7 @@ function renderMenu() {
   const cont = $("continueBtn");
   cont.hidden = !(saved.started && t);
   if (!cont.hidden) {
-    const what = saved.mode === "tasks" ? "Translate · " + grammarTitle(t, saved.gfilter || "all") : "Learn · " + themeName(t, saved.theme || "all");
+    const what = saved.mode === "tasks" ? "Translate · " + grammarTitle(t, saved.gfilter || "all") : "Learn " + (saved.dir === "ru" ? "RU → EN" : "EN → RU") + " · " + themeName(t, saved.theme || "all");
     $("continueWhat").textContent = `Topic ${t.order} · ${what}`;
   }
 }
@@ -1578,6 +1580,15 @@ function renderVocab(t) {
   const box = $("panel-vocab"); box.innerHTML = "";
   if (!t.words.length) { box.append(el("div", "notice", "No words in this topic yet.")); return; }
   const fresh = t.words.filter(w => !rec(w)).length;
+  box.append(el("p", "label", "Learn words"));
+  const seg = el("div", "seg dirseg"); seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Direction");
+  [["en", "From English", "EN → RU"], ["ru", "From Russian", "RU → EN"]].forEach(([d, name, sub]) => {
+    const b = el("button"); b.type = "button"; b.setAttribute("aria-pressed", state.dir === d);
+    b.append(el("span", null, name), el("small", null, sub));
+    b.addEventListener("click", () => { if (state.dir === d) return; state.dir = d; haptic("tap"); saveUiState(); renderVocab(t); });
+    seg.append(b);
+  });
+  box.append(seg);
   const allBtn = el("button", "continue"); allBtn.id = "learnAll";
   allBtn.innerHTML = `<span class="c-lbl">Learn all words</span><span class="c-what"></span><span class="c-go" aria-hidden="true">→</span>`;
   allBtn.querySelector(".c-what").textContent = `${learnedIn(t.words)} of ${t.words.length} learned` + (fresh ? ` · ${fresh} new` : "");
@@ -1648,7 +1659,7 @@ function startPractice(mode) {
   state.mode = mode; lastKey = null; current = null; haptic("tap");
   saveUiState({ started: true });
   const t = curTopic();
-  $("ctxMode").textContent = mode === "learn" ? "Learn words" : "Translate";
+  $("ctxMode").textContent = mode === "learn" ? (state.dir === "ru" ? "Learn words · RU → EN" : "Learn words · EN → RU") : "Translate";
   $("ctxSet").textContent = `Topic ${t.order} · ` + (mode === "learn" ? themeName(t, state.theme) : grammarTitle(t, state.gfilter));
   go("practice");
   renderProgress(); renderCard();
@@ -1672,14 +1683,16 @@ function renderCard() {
   $("boxInfo").textContent = BOX_NAMES[bucketOf(it)];
   if (learn) {
     $("topicName").textContent = themeName(t, it.topic && t.themes[it.topic] ? it.topic : "_other") + (it.group ? " · " + it.group : "");
-    $("prompt").textContent = it.en + (it.tr ? "  " + it.tr : "");
-    const left = pool().filter(x => !rec(x)).length;
-    $("task").textContent = left ? `New: ${left} left · try to recall the meaning` : "Review · try to recall the meaning";
-    const hint = el("button", "hint", "Tap to see the translation"); hint.id = "reveal";
+    const fromRu = state.dir === "ru";
+    $("prompt").textContent = fromRu ? it.ru : it.en + (it.tr ? "  " + it.tr : "");
+    $("speakBtn").hidden = fromRu;
+    const left = pool().filter(x => !rec(x)).length, goal = fromRu ? "try to recall the English word" : "try to recall the meaning";
+    $("task").textContent = left ? `New: ${left} left · ${goal}` : `Review · ${goal}`;
+    const hint = el("button", "hint", fromRu ? "Tap to see the English word" : "Tap to see the translation"); hint.id = "reveal";
     hint.addEventListener("click", reveal);
     area.append(hint, swipeHint());
-    setMainText("Show translation");
-    speak(it.en);
+    setMainText(fromRu ? "Show English" : "Show translation");
+    if (!fromRu) speak(it.en);
     return;
   }
   $("topicName").textContent = grammarTitle(t, it.grammar);
@@ -1706,7 +1719,10 @@ function reveal() {
   answered = true; haptic("tap");
   const it = current, area = $("answerArea"); area.innerHTML = "";
   const f = el("div", "flip");
-  [["ru", it.ru], ["ex", it.ex], ["exru", it.exRu]].forEach(([c, x]) => { if (x) f.append(el("span", c, x)); });
+  const fromRu = state.dir === "ru";
+  const first = fromRu ? it.en + (it.tr ? "  " + it.tr : "") : it.ru;
+  [["ru", first], ["ex", it.ex], ["exru", it.exRu]].forEach(([c, x]) => { if (x) f.append(el("span", c, x)); });
+  if (fromRu) { $("speakBtn").hidden = false; speak(it.en); }
   area.append(f, swipeHint());
   setMainText("I know it ✓");
   $("altBtn").hidden = false;
@@ -1905,6 +1921,7 @@ $("resetArea").addEventListener("click", e => {
   const saved = parse(lsGet(LS_STATE)) || {};
   if (TOPICS.some(t => t.id === saved.topic)) Object.assign(state, { topic: saved.topic, tab: saved.tab || "grammar", theme: saved.theme || "all", gfilter: saved.gfilter || "all" });
   else state.topic = TOPICS[0] && TOPICS[0].id;
+  state.dir = saved.dir === "ru" ? "ru" : "en";
   try { history.replaceState({ screen: "menu" }, ""); } catch {}
   $("loading").hidden = true;
   showScreen("menu");
