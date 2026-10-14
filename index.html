@@ -241,9 +241,9 @@ textarea#answer:focus { border-color: var(--accent); }
 .hide-ru .wordlist li:not(.flip-ru) .wru::after, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru::after { content: "tap to show"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .75rem; font-weight: 400; }
 .wordlist .wsay { border: 0; background: none; padding: 0 2px; font-size: 1rem; cursor: pointer; line-height: 1.4; }
 .vlabel .label { margin: 0; }
-.vtoggles { display: flex; gap: 8px; flex-wrap: wrap; }
-.rutoggle { flex: 1 1 0; border: 1px solid var(--rule); background: var(--sheet); color: var(--accent); border-radius: 999px; padding: 8px 12px; font: 600 .82rem var(--f-body); cursor: pointer; white-space: nowrap; }
-.rutoggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.wordlist .whead { position: sticky; top: 0; z-index: 1; background: var(--sheet); align-items: center; text-transform: none; letter-spacing: 0; }
+.coltoggle { justify-self: start; max-width: 100%; border: 1px solid var(--rule); background: var(--sheet); color: var(--accent); border-radius: 999px; padding: 5px 10px; font: 600 .75rem var(--f-body); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coltoggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .theme .chev { transition: none; } }
 
 /* tasks */
@@ -1696,20 +1696,20 @@ function renderVocab(t) {
   box.classList.toggle("hide-en", !!state.hideEn);
   box.classList.toggle("hide-ru", !!state.hideRu);
   box.append(el("p", "label vlabel", "Themes · tap a word or translation to hide / show it"));
-  const vt = el("div", "vtoggles");
-  [["hideEn", "hide-en", "flip-en", "English"], ["hideRu", "hide-ru", "flip-ru", "Russian"]].forEach(([key, cls, flip, name]) => {
-    const b = el("button", "rutoggle"); b.type = "button";
-    const txt = () => { b.textContent = state[key] ? `👁 Show all ${name}` : `🙈 Hide all ${name}`; b.setAttribute("aria-pressed", !!state[key]); };
-    txt();
-    b.addEventListener("click", () => {
+  // hide/show-all toggles live in each word list's column header, right above the words
+  const COLS = [["hideEn", "hide-en", "flip-en", "English"], ["hideRu", "hide-ru", "flip-ru", "Russian"]];
+  const colText = (b, key, name) => { b.textContent = state[key] ? `👁 Show all ${name}` : `🙈 Hide all ${name}`; b.setAttribute("aria-pressed", !!state[key]); };
+  const colToggle = ([key, cls, flip, name]) => {
+    const b = el("button", "coltoggle"); b.type = "button"; b.dataset.key = key; colText(b, key, name);
+    b.addEventListener("click", e => {
+      e.stopPropagation();
       state[key] = !state[key]; haptic("tap"); saveUiState();
       box.classList.toggle(cls, state[key]);
       box.querySelectorAll(".wordlist li." + flip).forEach(li => li.classList.remove(flip));
-      txt();
+      box.querySelectorAll(`.coltoggle[data-key="${key}"]`).forEach(x => colText(x, key, name));
     });
-    vt.append(b);
-  });
-  box.append(vt);
+    return b;
+  };
   const groups = Object.entries(t.themes).map(([k, name]) => [k, name, t.words.filter(w => w.topic === k)]);
   const other = t.words.filter(w => !w.topic || !t.themes[w.topic]);
   if (other.length) groups.push(["_other", "Other", other]);
@@ -1724,8 +1724,8 @@ function renderVocab(t) {
     goBtn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); state.theme = k; startPractice("learn"); });
     s.append(goBtn); d.append(s);
     const ul = el("ul", "wordlist");
-    const head = el("li", "whead"); head.setAttribute("aria-hidden", "true");
-    head.append(el("span"), el("span", null, "English"), el("span", null, "Русский"), el("span"));
+    const head = el("li", "whead");
+    head.append(el("span"), colToggle(COLS[0]), colToggle(COLS[1]), el("span"));
     ul.append(head);
     let lastGroup = null;
     list.forEach(w => {
