@@ -234,11 +234,11 @@ textarea#answer:focus { border-color: var(--accent); }
 .wordlist .wen, .wordlist .wru { position: relative; justify-self: start; max-width: 100%; border: 0; background: none; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 6px; overflow-wrap: anywhere; }
 .wordlist .wru { color: var(--muted); font-size: .95rem; line-height: 1.4; }
 .hide-en .wordlist li:not(.flip-en) .wen, #panel-vocab:not(.hide-en) .wordlist li.flip-en .wen,
-.hide-ru .wordlist li:not(.flip-ru) .wru, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru { width: min(100%, 8.5em); height: 1.6em; overflow: hidden; white-space: nowrap; background: var(--rule); user-select: none; }
+.hide-ru .wordlist li:not(.flip-ru) .wru, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru { min-width: min(100%, 8.5em); min-height: 1.6em; background: var(--rule); user-select: none; }
 .hide-en .wordlist li:not(.flip-en) .wen > *, #panel-vocab:not(.hide-en) .wordlist li.flip-en .wen > *,
 .hide-ru .wordlist li:not(.flip-ru) .wru > *, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru > * { visibility: hidden; }
 .hide-en .wordlist li:not(.flip-en) .wen::after, #panel-vocab:not(.hide-en) .wordlist li.flip-en .wen::after,
-.hide-ru .wordlist li:not(.flip-ru) .wru::after, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru::after { content: "tap to show"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .75rem; font-weight: 400; }
+.hide-ru .wordlist li:not(.flip-ru) .wru::after, #panel-vocab:not(.hide-ru) .wordlist li.flip-ru .wru::after { content: "tap to show"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); white-space: nowrap; color: var(--muted); font-size: .75rem; font-weight: 400; }
 .wordlist .wsay { border: 0; background: none; padding: 0 2px; font-size: 1rem; cursor: pointer; line-height: 1.4; }
 .vlabel .label { margin: 0; }
 .wordlist .whead { position: sticky; top: 0; z-index: 1; background: var(--sheet); align-items: center; text-transform: none; letter-spacing: 0; }
