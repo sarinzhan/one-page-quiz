@@ -18,7 +18,9 @@ Never use a word that first appears in a later topic. If a natural sentence need
 `tools/check.py` enforces this.
 
 ## Storing topics
-- One object per book topic: `"id": "topic-NN"`, `"order": N`, `"title": "Topic N · <name>"`, `"pages": "24–28"`.
+- One object per book topic: `"id": "topic-NN"`, `"order": N`, `"level": L`, `"title": "Topic N · <name>"`, `"pages": "24–28"`.
+- Topics are grouped into **levels** in the main menu. Topics 1–6 are Level 1; Topic 7 (Appearance) starts Level 2.
+  New topics go into the latest level unless the owner says to start a new one. Topic numbers keep counting across levels.
 - Keep topic ids, word ids (`w001`…), task ids (`t01`…) and grammar ids stable: progress is saved by them.
   New words get the next free id in that topic.
 - Words: `en`, `ru`, `tr`, `topic` (theme key), and `ex` + `exRu` when possible.

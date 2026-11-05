@@ -187,6 +187,8 @@ textarea#answer:focus { border-color: var(--accent); }
   background: var(--paper); border: 1.5px solid var(--rule); font: 700 1rem var(--f-body); color: var(--accent); }
 .topicrow .t small { display: block; font-weight: 400; font-size: .8rem; color: var(--muted); margin-top: 1px; }
 .topicrow:hover { border-color: var(--accent); }
+.levelhead { margin: 10px 0 0; }
+.levelhead:first-child { margin-top: 0; }
 .panel { display: flex; flex-direction: column; gap: 14px; }
 .tabs button { font-size: .88rem; padding: 10px 8px; }
 #topic .ctx-mode { line-height: 1.25; text-wrap: balance; }
@@ -333,7 +335,7 @@ textarea#answer:focus { border-color: var(--accent); }
 
 <!--
   DATA: the whole course lives in the JSON block below. Format and rules: README.md and CLAUDE.md.
-  {"topics": [{"id", "order", "title", "pages", "added",
+  {"topics": [{"id", "order", "level", "title", "pages", "added",
                "grammar": [{"id", "title", "body"}],        body: light markup (see README)
                "themes":  {"key": "Theme name"},
                "words":   [{"id", "en", "ru", "tr", "topic", "group", "ex", "exRu"}],   topic = theme key, group = optional sub-heading
@@ -345,7 +347,7 @@ textarea#answer:focus { border-color: var(--accent); }
   "topics": [
     {
       "id": "topic-01",
-      "order": 1,
+      "order": 1, "level": 1,
       "title": "Topic 1 · Sounds & first words",
       "pages": "14–20",
       "added": "2026-10-08",
@@ -583,7 +585,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-02",
-      "order": 2,
+      "order": 2, "level": 1,
       "title": "Topic 2 · Colours, animals & to be",
       "pages": "24–33",
       "added": "2026-10-11",
@@ -895,7 +897,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-03",
-      "order": 3,
+      "order": 3, "level": 1,
       "title": "Topic 3 · Numbers & dates",
       "pages": "38–42",
       "added": "2026-10-12",
@@ -1094,7 +1096,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-04",
-      "order": 4,
+      "order": 4, "level": 1,
       "title": "Topic 4 · Breakfast & countable nouns",
       "pages": "61–70",
       "added": "2026-10-13",
@@ -1326,7 +1328,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-05",
-      "order": 5,
+      "order": 5, "level": 1,
       "title": "Topic 5 · Daily routine & Present Simple",
       "pages": "73–75",
       "added": "2026-10-19",
@@ -1566,7 +1568,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-06",
-      "order": 6,
+      "order": 6, "level": 1,
       "title": "Topic 6 · At a food shop & Present Continuous",
       "pages": "99",
       "added": "2026-10-27",
@@ -1675,7 +1677,7 @@ textarea#answer:focus { border-color: var(--accent); }
     },
     {
       "id": "topic-07",
-      "order": 7,
+      "order": 7, "level": 2,
       "title": "Topic 7 · Appearance",
       "pages": "90–91",
       "added": "2026-11-05",
@@ -2052,7 +2054,15 @@ window.addEventListener("popstate", e => {
 /* ---------- screen 1: topics ---------- */
 function renderMenu() {
   const box = $("topicList"); box.innerHTML = "";
+  let curLevel = null;
   TOPICS.forEach(t => {
+    const lv = t.level || 1;
+    if (lv !== curLevel) {
+      curLevel = lv;
+      const lw = TOPICS.filter(x => (x.level || 1) === lv).flatMap(x => x.words);
+      const h = el("p", "label levelhead", `Level ${lv} · ${learnedIn(lw)} / ${lw.length} words`);
+      box.append(h);
+    }
     const b = el("button", "setrow topicrow"); b.id = "open-" + t.id;
     const learned = learnedIn(t.words), total = t.words.length;
     b.innerHTML = `<span class="ord">${t.order}</span><span class="t"></span><span class="num">${learned}/${total}</span><span class="mini"><span style="width:${total ? learned / total * 100 : 0}%"></span></span>`;

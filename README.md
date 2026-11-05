@@ -4,7 +4,7 @@ A one-page English course built from the owner's book, topic by topic.
 It works on GitHub Pages, as a Telegram Mini App, or by simply opening `index.html`.
 
 ## How it works
-- **Main menu:** the list of book topics, in book order. **Continue** reopens your last practice.
+- **Main menu:** the list of book topics, in book order, grouped into levels (Level 1, Level 2…). **Continue** reopens your last practice.
 - **A topic** has three tabs:
   - **Grammar**: explanations only (rules, tables, examples). Each section has a *Practise* button that opens its sentences.
   - **Vocabulary**: the topic's words grouped by theme. Tap a theme to see its words (tap a word to hear it).
@@ -22,7 +22,7 @@ It works on GitHub Pages, as a Telegram Mini App, or by simply opening `index.ht
 Everything is in the JSON block `<script id="words" type="application/json">` inside `index.html`:
 ```json
 {"topics": [{
-  "id": "topic-02", "order": 2, "title": "Topic 2 · Colours, animals & to be", "pages": "24–28", "added": "2026-10-11",
+  "id": "topic-02", "order": 2, "level": 1, "title": "Topic 2 · Colours, animals & to be", "pages": "24–28", "added": "2026-10-11",
   "themes":  {"colours": "Colours", "young": "Animals & their young"},
   "grammar": [{"id": "g-tobe", "title": "Глагол to be: am / is / are", "body": "…markup…"}],
   "words":   [{"id": "w051", "en": "black", "ru": "чёрный", "tr": "/blæk/", "topic": "colours", "ex": "My cat is black.", "exRu": "Моя кошка чёрная."}],
