@@ -58,6 +58,11 @@ def forms(w):
     if w.endswith("ies") and len(w) > 4: f.add(w[:-3] + "y")
     if w.endswith("es") and len(w) > 3: f.add(w[:-2])
     if w.endswith("s") and len(w) > 2: f.add(w[:-1])
+    if w.endswith("ing") and len(w) > 4:          # doing, working, writing, running, lying
+        stem = w[:-3]
+        f |= {stem, stem + "e"}
+        if len(stem) > 2 and stem[-1] == stem[-2]: f.add(stem[:-1])
+        if stem.endswith("y"): f.add(stem[:-1] + "ie")
     return f
 
 
