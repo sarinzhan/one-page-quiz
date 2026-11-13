@@ -34,6 +34,8 @@ Everything is in the JSON block `<script id="words" type="application/json">` in
   In `en`, text in `(…)` is optional and `a / b` lists alternatives.
 - **tasks:** `ru` is the prompt; `en` is a list: the first item is the main answer, the rest are other accepted answers;
   `grammar` is the id of the grammar section it practises.
+  Add `"card": true` to make a task a **flashcard** instead of a typed answer: the Russian is shown first, a tap flips to the English,
+  then swipe right (I know it) / left (repeat). Used for the class drills (e.g. Topic 9 · "Тренировка: сейчас или каждый день").
 - **grammar body markup:** `### subheading`, `| table | rows |` (first row = header), `> example — перевод`,
   `- list item`, `! tip`, `**bold**`, `*italic*`, `~~wrong form~~`. Blank line = new paragraph.
 - **IDs never change** after publishing, because progress is saved by them.

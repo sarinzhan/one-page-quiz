@@ -26,6 +26,7 @@ Never use a word that first appears in a later topic. If a natural sentence need
 - Words: `en`, `ru`, `tr`, `topic` (theme key), and `ex` + `exRu` when possible.
   For one big page (like clothes), use ONE theme and split it with `group` sub-headings instead of many small themes.
 - Tasks: `ru`, `en` (list: main answer first, then other correct variants such as short forms), `grammar`.
+  Optional `"card": true` = flashcard task (RU shown, flip to EN, no typing). Use it for drills from class recordings.
   Add a hint in brackets to `ru` when English needs something Russian doesn't show, e.g. "Это груши. (рядом)".
 
 ## Workflow: photos from the book
